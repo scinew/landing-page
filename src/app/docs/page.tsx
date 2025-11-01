@@ -4,8 +4,121 @@ import { motion } from "framer-motion";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { ArrowLeft, BookOpen, Code, Zap, Shield, Globe, Eye } from "lucide-react";
+import {
+  ArrowLeft,
+  BarChart3,
+  BookOpen,
+  Clock,
+  Code,
+  DollarSign,
+  Gauge,
+  GitCompare,
+  Globe,
+  Layers,
+  Shield,
+  Zap,
+  Eye,
+} from "lucide-react";
 import Link from "next/link";
+import { SITE_MODELS } from "@/lib/models";
+
+const PRICING_PLANS = [
+  {
+    name: "Developer",
+    price: "$99",
+    period: "/month",
+    tokens: "50M tokens included",
+    description: "Prototype quickly with entry-level and lightweight models.",
+    includes: [
+      "Access to Oculus Mini & Oculus 1.0",
+      "Shared GPU inference",
+      "Community + email support",
+    ],
+  },
+  {
+    name: "Growth",
+    price: "$399",
+    period: "/month",
+    tokens: "250M tokens included",
+    description: "Scale to production with enhanced reasoning and specialist models.",
+    includes: [
+      "Oculus 1.5, 2.0 & Vision",
+      "Low-latency streaming endpoints",
+      "Priority support",
+    ],
+  },
+  {
+    name: "Professional",
+    price: "$899",
+    period: "/month",
+    tokens: "600M tokens included",
+    description: "Enterprise-ready package with multimodal and Pro tiers.",
+    includes: [
+      "Oculus 2.5, Pro 1.0 & Pro 2.0",
+      "Dedicated success manager",
+      "Fine-tuning credits",
+    ],
+  },
+  {
+    name: "Enterprise & Ultra",
+    price: "Custom",
+    period: "",
+    tokens: "Volume-based",
+    description: "Mission-critical deployments with Oculus 3.x, 4.0, and Ultra tiers.",
+    includes: [
+      "Private cloud or on-prem options",
+      "99.95%+ SLA",
+      "White-glove onboarding",
+    ],
+  },
+];
+
+const MIGRATION_GUIDES = [
+  {
+    from: "oculus-1-0125",
+    to: "oculus-2.0-0615",
+    summary: "Upgrade to enhanced reasoning without changing payload formats.",
+    steps: [
+      "Increase `context_window` to 64K tokens for deeper analysis.",
+      "Tune retry policies for 145ms average latency.",
+      "Capture new reasoning traces emitted in responses.",
+    ],
+  },
+  {
+    from: "oculus-2.0-0615",
+    to: "oculus-2.5-0728",
+    summary: "Enable multimodal analysis across vision, text, and audio streams.",
+    steps: [
+      "Request multimodal access in the console.",
+      "Send combined payloads under `inputs` with typed content.",
+      "Validate token budgets up to 128K contexts.",
+    ],
+  },
+  {
+    from: "oculus-3.0-0901",
+    to: "oculus-3.5-1015",
+    summary: "Adopt enterprise controls with compliance guardrails.",
+    steps: [
+      "Provision tenant isolation headers for regulated workloads.",
+      "Enable audit streaming to your SIEM endpoint.",
+      "Roll out gradually with dual-write validation.",
+    ],
+  },
+  {
+    from: "oculus-pro-2.0",
+    to: "oculus-4.0-1120",
+    summary: "Unlock premium performance and 1M+ token contexts.",
+    steps: [
+      "Engage Oculus Solutions for quota planning.",
+      "Recalibrate accuracy thresholds with new benchmarks.",
+      "Adopt predictive webhooks for proactive interventions.",
+    ],
+  },
+];
+
+const BENCHMARK_MODEL_IDS = ["oculus-1-0125", "oculus-2.0-0615", "oculus-3.5-1015", "oculus-4.0-1120", "oculus-ultra-1.0"] as const;
+
+const formatCurrency = (value: number) => `${value.toFixed(2)}`;
 
 export default function Documentation() {
   return (
@@ -52,6 +165,11 @@ export default function Documentation() {
               <a href="#getting-started" className="block text-white hover:text-gray-300 transition-colors py-2">Getting Started</a>
               <a href="#authentication" className="block text-white hover:text-gray-300 transition-colors py-2">Authentication</a>
               <a href="#models" className="block text-white hover:text-gray-300 transition-colors py-2">Models</a>
+              <a href="#pricing" className="block text-white hover:text-gray-300 transition-colors py-2">Pricing</a>
+              <a href="#benchmarks" className="block text-white hover:text-gray-300 transition-colors py-2">Benchmarks</a>
+              <a href="#comparison" className="block text-white hover:text-gray-300 transition-colors py-2">Comparison</a>
+              <a href="#migration" className="block text-white hover:text-gray-300 transition-colors py-2">Migration Guides</a>
+              <a href="#rate-limits" className="block text-white hover:text-gray-300 transition-colors py-2">Rate Limits</a>
               <a href="#api-reference" className="block text-white hover:text-gray-300 transition-colors py-2">API Reference</a>
               <a href="#examples" className="block text-white hover:text-gray-300 transition-colors py-2">Examples</a>
               <a href="#capabilities" className="block text-white hover:text-gray-300 transition-colors py-2">Capabilities</a>
@@ -154,6 +272,12 @@ export default function Documentation() {
                 viewport={{ once: true }}
               >
                 <h2 className="text-3xl font-bold mb-6">Available Models</h2>
+                <p className="text-gray-400 mb-8">
+                  Oculus AI offers a comprehensive suite of 12 vision models, each optimized for different use cases and performance requirements.{" "}
+                  <Link href="/models" className="text-white hover:underline inline-flex items-center gap-1">
+                    View all 12 models <ArrowLeft className="w-4 h-4 rotate-180" />
+                  </Link>
+                </p>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                   <Card className="bg-white/5 border-white/10 backdrop-blur-sm hover:bg-white/10 transition-all">
                     <CardHeader>
