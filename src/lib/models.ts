@@ -1,4 +1,4 @@
-export type AvailabilityStatus = "ga" | "beta" | "preview";
+export type AvailabilityStatus = "ga" | "beta" | "preview" | "coming-soon";
 
 export type ModelTier =
   | "foundation"
@@ -7,7 +7,13 @@ export type ModelTier =
   | "enterprise"
   | "premium"
   | "lightweight"
-  | "specialized";
+  | "specialized"
+  | "ultra"
+  | "pro"
+  | "mini"
+  | "secret";
+
+export type ModelSeries = "foundation" | "ultra" | "pro" | "mini" | "specialized" | "secret";
 
 export interface OculusModel {
   id: string;
@@ -15,12 +21,14 @@ export interface OculusModel {
   version: string;
   badge: string;
   tier: ModelTier;
+  series: ModelSeries;
   description: string;
   contextWindowTokens: number;
   contextWindowLabel: string;
   pricing: {
     input: number;
     output: number;
+    note?: string;
   };
   performance: {
     accuracy: string;
@@ -43,6 +51,8 @@ export interface OculusModel {
   releaseDate: string;
   maxImageSize?: string;
   recommendedOrder: number;
+  statusTag?: "new" | "coming-soon" | "flagship";
+  isSecret?: boolean;
 }
 
 export const SITE_MODELS: OculusModel[] = [
@@ -52,7 +62,9 @@ export const SITE_MODELS: OculusModel[] = [
     version: "0125",
     badge: "Foundation Model",
     tier: "foundation",
-    description: "General-purpose vision model optimized for speed and efficiency. Perfect for getting started with vision AI.",
+    series: "foundation",
+    description:
+      "General-purpose vision model optimized for speed and efficiency. Perfect for getting started with vision AI.",
     contextWindowTokens: 8192,
     contextWindowLabel: "8K tokens",
     pricing: {
@@ -78,7 +90,7 @@ export const SITE_MODELS: OculusModel[] = [
       "Basic security monitoring",
       "Photo organization",
     ],
-    categories: ["general", "lightweight"],
+    categories: ["foundation", "general", "lightweight"],
     rateLimit: "60 req/min • 500k tokens/min",
     rateLimits: {
       rpm: 60,
@@ -98,8 +110,10 @@ export const SITE_MODELS: OculusModel[] = [
     version: "0503",
     badge: "Enhanced Model",
     tier: "enhanced",
-    description: "Advanced vision with multi-modal support and improved accuracy for complex visual understanding tasks.",
-    contextWindowTokens: 32768,
+    series: "foundation",
+    description:
+      "Advanced vision with multi-modal support and improved accuracy for complex visual understanding tasks.",
+    contextWindowTokens: 32_768,
     contextWindowLabel: "32K tokens",
     pricing: {
       input: 2,
@@ -125,7 +139,7 @@ export const SITE_MODELS: OculusModel[] = [
       "Advanced retail analytics",
       "Video content understanding",
     ],
-    categories: ["general", "multimodal"],
+    categories: ["foundation", "general", "multimodal"],
     rateLimit: "100 req/min • 900k tokens/min",
     rateLimits: {
       rpm: 100,
@@ -145,8 +159,10 @@ export const SITE_MODELS: OculusModel[] = [
     version: "0615",
     badge: "Enhanced Reasoning",
     tier: "advanced",
-    description: "Enhanced reasoning capabilities with improved contextual understanding and multi-step visual analysis.",
-    contextWindowTokens: 65536,
+    series: "foundation",
+    description:
+      "Enhanced reasoning capabilities with improved contextual understanding and multi-step visual analysis.",
+    contextWindowTokens: 65_536,
     contextWindowLabel: "64K tokens",
     pricing: {
       input: 3.5,
@@ -172,7 +188,7 @@ export const SITE_MODELS: OculusModel[] = [
       "Advanced surveillance",
       "Document understanding",
     ],
-    categories: ["general"],
+    categories: ["foundation", "general", "reasoning"],
     rateLimit: "150 req/min • 1.4M tokens/min",
     rateLimits: {
       rpm: 150,
@@ -192,8 +208,10 @@ export const SITE_MODELS: OculusModel[] = [
     version: "0728",
     badge: "Multimodal Expert",
     tier: "advanced",
-    description: "Multimodal capabilities combining vision, text, and audio understanding for comprehensive analysis.",
-    contextWindowTokens: 131072,
+    series: "foundation",
+    description:
+      "Multimodal capabilities combining vision, text, and audio understanding for comprehensive analysis.",
+    contextWindowTokens: 131_072,
     contextWindowLabel: "128K tokens",
     pricing: {
       input: 5,
@@ -219,7 +237,7 @@ export const SITE_MODELS: OculusModel[] = [
       "Accessibility applications",
       "Interactive virtual assistants",
     ],
-    categories: ["multimodal"],
+    categories: ["foundation", "multimodal", "enterprise"],
     rateLimit: "200 req/min • 1.8M tokens/min",
     rateLimits: {
       rpm: 200,
@@ -239,8 +257,9 @@ export const SITE_MODELS: OculusModel[] = [
     version: "0901",
     badge: "Advanced Intelligence",
     tier: "advanced",
+    series: "foundation",
     description: "State-of-the-art vision intelligence with breakthrough performance across all benchmarks.",
-    contextWindowTokens: 262144,
+    contextWindowTokens: 262_144,
     contextWindowLabel: "256K tokens",
     pricing: {
       input: 7.5,
@@ -266,7 +285,7 @@ export const SITE_MODELS: OculusModel[] = [
       "Industrial automation",
       "Research applications",
     ],
-    categories: ["general", "enterprise"],
+    categories: ["foundation", "enterprise", "advanced"],
     rateLimit: "250 req/min • 2.2M tokens/min",
     rateLimits: {
       rpm: 250,
@@ -286,8 +305,10 @@ export const SITE_MODELS: OculusModel[] = [
     version: "1015",
     badge: "Enterprise Grade",
     tier: "enterprise",
-    description: "Enterprise-focused model with enhanced security, compliance features, and guaranteed SLAs.",
-    contextWindowTokens: 524288,
+    series: "foundation",
+    description:
+      "Enterprise-focused model with enhanced security, compliance features, and guaranteed SLAs.",
+    contextWindowTokens: 524_288,
     contextWindowLabel: "512K tokens",
     pricing: {
       input: 10,
@@ -313,7 +334,7 @@ export const SITE_MODELS: OculusModel[] = [
       "Legal document processing",
       "Regulated industries",
     ],
-    categories: ["enterprise"],
+    categories: ["foundation", "enterprise", "compliance"],
     rateLimit: "500 req/min • 3M tokens/min",
     rateLimits: {
       rpm: 500,
@@ -333,6 +354,7 @@ export const SITE_MODELS: OculusModel[] = [
     version: "1120",
     badge: "Cutting Edge",
     tier: "premium",
+    series: "foundation",
     description: "The most advanced vision model available, pushing the boundaries of what's possible with AI vision.",
     contextWindowTokens: 1_048_576,
     contextWindowLabel: "1M tokens",
@@ -345,7 +367,7 @@ export const SITE_MODELS: OculusModel[] = [
       latency: "250ms",
       throughput: "2.5K/sec",
     },
-    performanceScore: 9995,
+    performanceScore: 9_995,
     capabilities: [
       "Near-human visual understanding",
       "Real-time video analysis",
@@ -360,7 +382,7 @@ export const SITE_MODELS: OculusModel[] = [
       "Next-gen autonomous systems",
       "Space exploration",
     ],
-    categories: ["general", "enterprise"],
+    categories: ["foundation", "enterprise", "premium"],
     rateLimit: "1000 req/min • 4.5M tokens/min",
     rateLimits: {
       rpm: 1000,
@@ -375,13 +397,264 @@ export const SITE_MODELS: OculusModel[] = [
     recommendedOrder: 7,
   },
   {
+    id: "oculus-4.5-1205",
+    name: "Oculus 4.5",
+    version: "1205",
+    badge: "Next-Gen Foundation",
+    tier: "premium",
+    series: "foundation",
+    description:
+      "Next-generation foundation model blending multi-sensory reasoning with autonomous planning assistance.",
+    contextWindowTokens: 1_572_864,
+    contextWindowLabel: "1.5M tokens",
+    pricing: {
+      input: 18,
+      output: 54,
+    },
+    performance: {
+      accuracy: "99.97%",
+      latency: "230ms",
+      throughput: "2.2K/sec",
+    },
+    performanceScore: 9_997,
+    capabilities: [
+      "Multi-sensory fusion",
+      "Autonomous agent planning",
+      "Real-time translation overlays",
+      "Vision-language grounding",
+      "Adaptive inference routing",
+      "Self-healing pipelines",
+    ],
+    useCases: [
+      "Global operations automation",
+      "Mission control centers",
+      "High-stakes analytics",
+      "Augmented reality orchestration",
+    ],
+    categories: ["foundation", "enterprise", "premium"],
+    rateLimit: "1500 req/min • 5.5M tokens/min",
+    rateLimits: {
+      rpm: 1500,
+      tpm: 5_500_000,
+      burst: 72,
+    },
+    availability: "beta",
+    availabilityLabel: "Beta Access",
+    availabilitySla: "99.97%",
+    releaseDate: "2025-12-05",
+    maxImageSize: "80Kx80K",
+    recommendedOrder: 8,
+    statusTag: "new",
+  },
+  {
+    id: "oculus-5.0-0110",
+    name: "Oculus 5.0",
+    version: "0110",
+    badge: "State of the Art",
+    tier: "premium",
+    series: "foundation",
+    description:
+      "Fifth-generation foundation intelligence delivering unified perception, reasoning, and actuation orchestration.",
+    contextWindowTokens: 3_145_728,
+    contextWindowLabel: "3.1M tokens",
+    pricing: {
+      input: 22,
+      output: 66,
+    },
+    performance: {
+      accuracy: "99.99%",
+      latency: "260ms",
+      throughput: "2K/sec",
+    },
+    performanceScore: 9_999,
+    capabilities: [
+      "Generalized perception",
+      "Cross-domain logic",
+      "Predictive interventions",
+      "Long-horizon memory",
+      "Autonomous workflow steering",
+      "Hybrid cloud deployment",
+    ],
+    useCases: [
+      "Global digital twins",
+      "Autonomous supply chains",
+      "Planet-scale analytics",
+      "Strategic planning copilots",
+    ],
+    categories: ["foundation", "enterprise", "premium"],
+    rateLimit: "2000 req/min • 7M tokens/min",
+    rateLimits: {
+      rpm: 2000,
+      tpm: 7_000_000,
+      burst: 84,
+    },
+    availability: "coming-soon",
+    availabilityLabel: "Coming Soon",
+    availabilitySla: "99.995%",
+    releaseDate: "2026-01-10",
+    maxImageSize: "96Kx96K",
+    recommendedOrder: 9,
+    statusTag: "coming-soon",
+  },
+  {
+    id: "oculus-ultra-1.0",
+    name: "Oculus Ultra",
+    version: "1.0",
+    badge: "Premium Tier",
+    tier: "ultra",
+    series: "ultra",
+    description: "Premium tier model with the highest accuracy and most advanced capabilities available.",
+    contextWindowTokens: 2_097_152,
+    contextWindowLabel: "2M tokens",
+    pricing: {
+      input: 20,
+      output: 60,
+    },
+    performance: {
+      accuracy: "99.98%",
+      latency: "280ms",
+      throughput: "2K/sec",
+    },
+    performanceScore: 9_998,
+    capabilities: [
+      "Unmatched accuracy",
+      "Complex reasoning chains",
+      "Advanced world modeling",
+      "Multi-domain expertise",
+      "Adaptive learning",
+      "Self-improving capabilities",
+    ],
+    useCases: [
+      "Breakthrough research",
+      "Critical decision systems",
+      "Autonomous mission planning",
+      "Advanced medical diagnosis",
+      "Aerospace applications",
+    ],
+    categories: ["ultra", "enterprise", "premium"],
+    rateLimit: "2000 req/min • 6M tokens/min",
+    rateLimits: {
+      rpm: 2000,
+      tpm: 6_000_000,
+      burst: 80,
+    },
+    availability: "preview",
+    availabilityLabel: "Preview",
+    availabilitySla: "99.99%",
+    releaseDate: "2025-11-30",
+    maxImageSize: "128Kx128K",
+    recommendedOrder: 10,
+  },
+  {
+    id: "oculus-ultra-1.5",
+    name: "Oculus Ultra 1.5",
+    version: "1.5",
+    badge: "Premium Tier+",
+    tier: "ultra",
+    series: "ultra",
+    description:
+      "Enhanced Ultra variant with dynamic self-optimization and continuous model distillation for elite workloads.",
+    contextWindowTokens: 3_407_872,
+    contextWindowLabel: "3.5M tokens",
+    pricing: {
+      input: 30,
+      output: 90,
+    },
+    performance: {
+      accuracy: "99.985%",
+      latency: "290ms",
+      throughput: "1.8K/sec",
+    },
+    performanceScore: 10_005,
+    capabilities: [
+      "Dynamic self-optimization",
+      "Adaptive guardrails",
+      "Multi-tenant isolation",
+      "Predictive resource scaling",
+      "Knowledge graph synthesis",
+      "Contextual memory replay",
+    ],
+    useCases: [
+      "Government intelligence",
+      "Enterprise digital twins",
+      "Hyper-personalized assistants",
+      "Autonomous R&D pipelines",
+    ],
+    categories: ["ultra", "enterprise", "premium"],
+    rateLimit: "2500 req/min • 8M tokens/min",
+    rateLimits: {
+      rpm: 2500,
+      tpm: 8_000_000,
+      burst: 88,
+    },
+    availability: "preview",
+    availabilityLabel: "Preview",
+    availabilitySla: "99.995%",
+    releaseDate: "2025-12-20",
+    maxImageSize: "140Kx140K",
+    recommendedOrder: 11,
+    statusTag: "new",
+  },
+  {
+    id: "oculus-ultra-2.0-MAX",
+    name: "Oculus Ultra 2.0 MAX",
+    version: "2.0-MAX",
+    badge: "Flagship Ultra",
+    tier: "ultra",
+    series: "ultra",
+    description:
+      "Flagship Ultra model delivering maximum performance, full autonomy orchestration, and sovereign control planes.",
+    contextWindowTokens: 5_242_880,
+    contextWindowLabel: "5.2M tokens",
+    pricing: {
+      input: 40,
+      output: 120,
+      note: "Enterprise contract required",
+    },
+    performance: {
+      accuracy: "99.996%",
+      latency: "310ms",
+      throughput: "1.6K/sec",
+    },
+    performanceScore: 10_020,
+    capabilities: [
+      "Autonomous decision loops",
+      "Self-regulating compliance",
+      "Cross-domain fusion",
+      "Strategic scenario generation",
+      "Neural memory fabrics",
+      "Custom accelerator integration",
+    ],
+    useCases: [
+      "Autonomous mission control",
+      "Nation-scale analytics",
+      "Global resilience management",
+      "Next-gen financial modeling",
+    ],
+    categories: ["ultra", "enterprise", "premium", "flagship"],
+    rateLimit: "3000 req/min • 10M tokens/min",
+    rateLimits: {
+      rpm: 3000,
+      tpm: 10_000_000,
+      burst: 96,
+    },
+    availability: "preview",
+    availabilityLabel: "Private Preview",
+    availabilitySla: "99.997%",
+    releaseDate: "2026-02-01",
+    maxImageSize: "160Kx160K",
+    recommendedOrder: 12,
+    statusTag: "flagship",
+  },
+  {
     id: "oculus-pro-1.0",
     name: "Oculus Pro 1.0",
     version: "1.0",
     badge: "Professional Tier",
     tier: "enterprise",
+    series: "pro",
     description: "Professional-grade model optimized for production workloads with consistent performance.",
-    contextWindowTokens: 131072,
+    contextWindowTokens: 131_072,
     contextWindowLabel: "128K tokens",
     pricing: {
       input: 6,
@@ -407,7 +680,7 @@ export const SITE_MODELS: OculusModel[] = [
       "Real-time systems",
       "Mission-critical applications",
     ],
-    categories: ["enterprise", "general"],
+    categories: ["pro", "enterprise", "general"],
     rateLimit: "300 req/min • 2M tokens/min",
     rateLimits: {
       rpm: 300,
@@ -419,7 +692,7 @@ export const SITE_MODELS: OculusModel[] = [
     availabilitySla: "99.9%",
     releaseDate: "2025-08-10",
     maxImageSize: "16Kx16K",
-    recommendedOrder: 8,
+    recommendedOrder: 13,
   },
   {
     id: "oculus-pro-2.0",
@@ -427,8 +700,10 @@ export const SITE_MODELS: OculusModel[] = [
     version: "2.0",
     badge: "Advanced Pro",
     tier: "enterprise",
-    description: "Advanced professional model with premium features for demanding production environments.",
-    contextWindowTokens: 262144,
+    series: "pro",
+    description:
+      "Advanced professional model with premium features for demanding production environments and global scale.",
+    contextWindowTokens: 262_144,
     contextWindowLabel: "256K tokens",
     pricing: {
       input: 12,
@@ -439,7 +714,7 @@ export const SITE_MODELS: OculusModel[] = [
       latency: "175ms",
       throughput: "4.2K/sec",
     },
-    performanceScore: 9985,
+    performanceScore: 9_985,
     capabilities: [
       "Ultra-reliable inference",
       "Advanced monitoring",
@@ -454,7 +729,7 @@ export const SITE_MODELS: OculusModel[] = [
       "Critical infrastructure",
       "High-stakes decision systems",
     ],
-    categories: ["enterprise"],
+    categories: ["pro", "enterprise", "operations"],
     rateLimit: "750 req/min • 3.5M tokens/min",
     rateLimits: {
       rpm: 750,
@@ -466,54 +741,57 @@ export const SITE_MODELS: OculusModel[] = [
     availabilitySla: "99.95%",
     releaseDate: "2025-10-01",
     maxImageSize: "32Kx32K",
-    recommendedOrder: 9,
+    recommendedOrder: 14,
   },
   {
-    id: "oculus-ultra-1.0",
-    name: "Oculus Ultra",
-    version: "1.0",
-    badge: "Premium Tier",
-    tier: "premium",
-    description: "Premium tier model with the highest accuracy and most advanced capabilities available.",
-    contextWindowTokens: 2_097_152,
-    contextWindowLabel: "2M tokens",
+    id: "oculus-pro-3.0",
+    name: "Oculus Pro 3.0",
+    version: "3.0",
+    badge: "Enterprise Pro+",
+    tier: "enterprise",
+    series: "pro",
+    description:
+      "Next-generation Pro model with autonomous failover, compliance sequencing, and hardened deployment primitives.",
+    contextWindowTokens: 393_216,
+    contextWindowLabel: "384K tokens",
     pricing: {
-      input: 20,
-      output: 60,
+      input: 14,
+      output: 42,
     },
     performance: {
-      accuracy: "99.98%",
-      latency: "280ms",
-      throughput: "2K/sec",
+      accuracy: "99.9%",
+      latency: "165ms",
+      throughput: "4K/sec",
     },
-    performanceScore: 9998,
+    performanceScore: 9_990,
     capabilities: [
-      "Unmatched accuracy",
-      "Complex reasoning chains",
-      "Advanced world modeling",
-      "Multi-domain expertise",
-      "Adaptive learning",
-      "Self-improving capabilities",
+      "Global failover orchestration",
+      "Policy-aware routing",
+      "Regulatory explainability",
+      "Cross-region synchronization",
+      "SLO-based scaling",
+      "Continuous compliance checks",
     ],
     useCases: [
-      "Breakthrough research",
-      "Critical decision systems",
-      "Advanced medical diagnosis",
-      "Aerospace applications",
+      "24/7 operations centers",
+      "Financial compliance pipelines",
+      "Critical infrastructure platforms",
+      "Government-grade deployments",
     ],
-    categories: ["general", "enterprise"],
-    rateLimit: "2000 req/min • 6M tokens/min",
+    categories: ["pro", "enterprise", "operations"],
+    rateLimit: "900 req/min • 4M tokens/min",
     rateLimits: {
-      rpm: 2000,
-      tpm: 6_000_000,
-      burst: 80,
+      rpm: 900,
+      tpm: 4_000_000,
+      burst: 60,
     },
-    availability: "preview",
-    availabilityLabel: "Preview",
-    availabilitySla: "99.99%",
-    releaseDate: "2025-11-30",
-    maxImageSize: "128Kx128K",
-    recommendedOrder: 10,
+    availability: "coming-soon",
+    availabilityLabel: "Coming Soon",
+    availabilitySla: "99.97%",
+    releaseDate: "2026-03-15",
+    maxImageSize: "40Kx40K",
+    recommendedOrder: 15,
+    statusTag: "coming-soon",
   },
   {
     id: "oculus-mini-1.0",
@@ -521,6 +799,7 @@ export const SITE_MODELS: OculusModel[] = [
     version: "1.0",
     badge: "Lightweight & Fast",
     tier: "lightweight",
+    series: "mini",
     description: "Ultra-fast, lightweight model optimized for edge devices and low-latency applications.",
     contextWindowTokens: 4096,
     contextWindowLabel: "4K tokens",
@@ -548,7 +827,7 @@ export const SITE_MODELS: OculusModel[] = [
       "Real-time camera apps",
       "Edge computing",
     ],
-    categories: ["lightweight"],
+    categories: ["mini", "lightweight", "edge"],
     rateLimit: "120 req/min • 700k tokens/min",
     rateLimits: {
       rpm: 120,
@@ -560,7 +839,104 @@ export const SITE_MODELS: OculusModel[] = [
     availabilitySla: "99.7%",
     releaseDate: "2025-07-15",
     maxImageSize: "2048x2048",
-    recommendedOrder: 11,
+    recommendedOrder: 16,
+  },
+  {
+    id: "oculus-mini-light",
+    name: "Oculus Mini Light",
+    version: "Light",
+    badge: "Ultra Lightweight",
+    tier: "lightweight",
+    series: "mini",
+    description: "Ultra-light edition built for wearables and ambient sensing with the fastest response time in the lineup.",
+    contextWindowTokens: 2048,
+    contextWindowLabel: "2K tokens",
+    pricing: {
+      input: 0.1,
+      output: 0.3,
+    },
+    performance: {
+      accuracy: "96.5%",
+      latency: "18ms",
+      throughput: "35K/sec",
+    },
+    performanceScore: 965,
+    capabilities: [
+      "Instant response loops",
+      "Battery-aware optimization",
+      "Compressed embeddings",
+      "Low-bandwidth streaming",
+      "Gesture detection",
+      "Edge caching",
+    ],
+    useCases: [
+      "Wearable devices",
+      "Smart home assistants",
+      "Retail kiosks",
+      "In-car copilots",
+    ],
+    categories: ["mini", "lightweight", "edge"],
+    rateLimit: "150 req/min • 400k tokens/min",
+    rateLimits: {
+      rpm: 150,
+      tpm: 400_000,
+      burst: 24,
+    },
+    availability: "ga",
+    availabilityLabel: "Generally Available",
+    availabilitySla: "99.6%",
+    releaseDate: "2025-08-25",
+    maxImageSize: "1536x1536",
+    recommendedOrder: 17,
+    statusTag: "new",
+  },
+  {
+    id: "oculus-mini-turbo",
+    name: "Oculus Mini Turbo",
+    version: "Turbo",
+    badge: "Speed Optimized",
+    tier: "lightweight",
+    series: "mini",
+    description: "Speed-tuned mini model with burst inference and priority streaming for latency-critical workflows.",
+    contextWindowTokens: 6144,
+    contextWindowLabel: "6K tokens",
+    pricing: {
+      input: 0.35,
+      output: 1,
+    },
+    performance: {
+      accuracy: "97.2%",
+      latency: "28ms",
+      throughput: "30K/sec",
+    },
+    performanceScore: 972,
+    capabilities: [
+      "Burst inference",
+      "Adaptive batching",
+      "Thermal-aware tuning",
+      "Streaming prioritization",
+      "Edge-to-cloud handoff",
+      "Rapid retraining hooks",
+    ],
+    useCases: [
+      "Autonomous drones",
+      "Factory robotics",
+      "Sports analytics",
+      "AR headset overlays",
+    ],
+    categories: ["mini", "lightweight", "speed"],
+    rateLimit: "220 req/min • 600k tokens/min",
+    rateLimits: {
+      rpm: 220,
+      tpm: 600_000,
+      burst: 30,
+    },
+    availability: "beta",
+    availabilityLabel: "Beta",
+    availabilitySla: "99.7%",
+    releaseDate: "2025-09-30",
+    maxImageSize: "2560x2560",
+    recommendedOrder: 18,
   },
   {
     id: "oculus-vision-1.0",
@@ -568,8 +944,9 @@ export const SITE_MODELS: OculusModel[] = [
     version: "1.0",
     badge: "Vision Specialist",
     tier: "specialized",
+    series: "specialized",
     description: "Specialized model fine-tuned specifically for advanced vision tasks and image understanding.",
-    contextWindowTokens: 65536,
+    contextWindowTokens: 65_536,
     contextWindowLabel: "64K tokens",
     pricing: {
       input: 4.5,
@@ -580,7 +957,7 @@ export const SITE_MODELS: OculusModel[] = [
       latency: "130ms",
       throughput: "6K/sec",
     },
-    performanceScore: 9975,
+    performanceScore: 9_975,
     capabilities: [
       "Expert image analysis",
       "Fine-grained classification",
@@ -595,7 +972,7 @@ export const SITE_MODELS: OculusModel[] = [
       "Fashion and design",
       "Visual quality control",
     ],
-    categories: ["vision", "multimodal"],
+    categories: ["specialized", "vision", "multimodal"],
     rateLimit: "180 req/min • 1.2M tokens/min",
     rateLimits: {
       rpm: 180,
@@ -607,14 +984,426 @@ export const SITE_MODELS: OculusModel[] = [
     availabilitySla: "99.8%",
     releaseDate: "2025-09-20",
     maxImageSize: "16Kx16K",
-    recommendedOrder: 12,
+    recommendedOrder: 19,
+  },
+  {
+    id: "oculus-vision-2.0",
+    name: "Oculus Vision 2.0",
+    version: "2.0",
+    badge: "Vision Specialist+",
+    tier: "specialized",
+    series: "specialized",
+    description:
+      "Second-generation vision specialist with volumetric reconstruction, spectral analysis, and hybrid sensing support.",
+    contextWindowTokens: 131_072,
+    contextWindowLabel: "128K tokens",
+    pricing: {
+      input: 6.5,
+      output: 19.5,
+    },
+    performance: {
+      accuracy: "99.85%",
+      latency: "125ms",
+      throughput: "6.5K/sec",
+    },
+    performanceScore: 9_985,
+    capabilities: [
+      "3D volumetric inference",
+      "Spectral image analysis",
+      "Multi-sensor fusion",
+      "Precision landmark detection",
+      "Temporal vision tracking",
+      "Domain adaptive tuning",
+    ],
+    useCases: [
+      "Surgical planning",
+      "Precision agriculture",
+      "Autonomous inspection",
+      "Scientific visualization",
+    ],
+    categories: ["specialized", "vision", "research"],
+    rateLimit: "220 req/min • 1.5M tokens/min",
+    rateLimits: {
+      rpm: 220,
+      tpm: 1_500_000,
+      burst: 32,
+    },
+    availability: "beta",
+    availabilityLabel: "Beta",
+    availabilitySla: "99.9%",
+    releaseDate: "2025-12-12",
+    maxImageSize: "20Kx20K",
+    recommendedOrder: 20,
+    statusTag: "new",
+  },
+  {
+    id: "oculus-code-1.0",
+    name: "Oculus Code 1.0",
+    version: "1.0",
+    badge: "Coding Specialist",
+    tier: "specialized",
+    series: "specialized",
+    description:
+      "Coding-focused vision model that fuses repo context, diagrams, and architecture maps for development teams.",
+    contextWindowTokens: 98_304,
+    contextWindowLabel: "96K tokens",
+    pricing: {
+      input: 4,
+      output: 12,
+    },
+    performance: {
+      accuracy: "99.6%",
+      latency: "140ms",
+      throughput: "5.8K/sec",
+    },
+    performanceScore: 9_960,
+    capabilities: [
+      "Code generation from visuals",
+      "Diagram understanding",
+      "Architecture auditing",
+      "Test synthesis",
+      "CI/CD recommendations",
+      "Legacy modernization",
+    ],
+    useCases: [
+      "DevOps automation",
+      "Engineering copilots",
+      "System documentation",
+      "Visual debugging",
+    ],
+    categories: ["specialized", "code", "developer"],
+    rateLimit: "180 req/min • 1M tokens/min",
+    rateLimits: {
+      rpm: 180,
+      tpm: 1_000_000,
+      burst: 28,
+    },
+    availability: "ga",
+    availabilityLabel: "Generally Available",
+    availabilitySla: "99.85%",
+    releaseDate: "2025-09-05",
+    maxImageSize: "12Kx12K",
+    recommendedOrder: 21,
+  },
+  {
+    id: "oculus-code-pro",
+    name: "Oculus Code Pro",
+    version: "2.0",
+    badge: "Advanced Coding",
+    tier: "specialized",
+    series: "specialized",
+    description:
+      "Enterprise-grade coding specialist with large-scale refactoring, policy compliance, and paired-repo orchestration.",
+    contextWindowTokens: 196_608,
+    contextWindowLabel: "192K tokens",
+    pricing: {
+      input: 8,
+      output: 24,
+    },
+    performance: {
+      accuracy: "99.9%",
+      latency: "155ms",
+      throughput: "4.8K/sec",
+    },
+    performanceScore: 9_990,
+    capabilities: [
+      "Large-scale refactoring",
+      "Static + dynamic analysis",
+      "Secure coding guardrails",
+      "Cross-repo reasoning",
+      "Automated migration plans",
+      "Compliance enforcement",
+    ],
+    useCases: [
+      "Transformation programs",
+      "Enterprise modernization",
+      "Codebase consolidation",
+      "Policy-driven development",
+    ],
+    categories: ["specialized", "code", "enterprise"],
+    rateLimit: "260 req/min • 2.4M tokens/min",
+    rateLimits: {
+      rpm: 260,
+      tpm: 2_400_000,
+      burst: 40,
+    },
+    availability: "beta",
+    availabilityLabel: "Beta",
+    availabilitySla: "99.9%",
+    releaseDate: "2025-12-01",
+    maxImageSize: "18Kx18K",
+    recommendedOrder: 22,
+    statusTag: "new",
+  },
+  {
+    id: "oculus-reason-1.0",
+    name: "Oculus Reason 1.0",
+    version: "1.0",
+    badge: "Reasoning Core",
+    tier: "advanced",
+    series: "specialized",
+    description: "Reasoning-first specialist for complex decision support, chain-of-thought, and strategic scenario modeling.",
+    contextWindowTokens: 262_144,
+    contextWindowLabel: "256K tokens",
+    pricing: {
+      input: 6,
+      output: 18,
+    },
+    performance: {
+      accuracy: "99.88%",
+      latency: "190ms",
+      throughput: "4.2K/sec",
+    },
+    performanceScore: 9_988,
+    capabilities: [
+      "Chain-of-thought reasoning",
+      "Counterfactual analysis",
+      "Strategic planning",
+      "Rationale extraction",
+      "Long-form debate",
+      "Decision tree synthesis",
+    ],
+    useCases: [
+      "Executive briefings",
+      "Operations centers",
+      "Risk forecasting",
+      "Complex investigations",
+    ],
+    categories: ["specialized", "reasoning", "enterprise"],
+    rateLimit: "240 req/min • 1.9M tokens/min",
+    rateLimits: {
+      rpm: 240,
+      tpm: 1_900_000,
+      burst: 36,
+    },
+    availability: "ga",
+    availabilityLabel: "Generally Available",
+    availabilitySla: "99.9%",
+    releaseDate: "2025-10-30",
+    maxImageSize: "20Kx20K",
+    recommendedOrder: 23,
+  },
+  {
+    id: "oculus-creative-1.0",
+    name: "Oculus Creative 1.0",
+    version: "1.0",
+    badge: "Creative Studio",
+    tier: "specialized",
+    series: "specialized",
+    description:
+      "Creative companion for multimedia ideation, storyboarding, moodboards, and generative visual experimentation.",
+    contextWindowTokens: 65_536,
+    contextWindowLabel: "64K tokens",
+    pricing: {
+      input: 3,
+      output: 9,
+    },
+    performance: {
+      accuracy: "98.9%",
+      latency: "110ms",
+      throughput: "7K/sec",
+    },
+    performanceScore: 9_890,
+    capabilities: [
+      "Generative moodboards",
+      "Creative direction",
+      "Visual storytelling",
+      "Color grading assistance",
+      "Marketing campaign ideation",
+      "Interactive concept refinement",
+    ],
+    useCases: [
+      "Marketing creative",
+      "Game concept art",
+      "Film pre-visualization",
+      "Brand development",
+    ],
+    categories: ["specialized", "creative", "multimodal"],
+    rateLimit: "160 req/min • 900k tokens/min",
+    rateLimits: {
+      rpm: 160,
+      tpm: 900_000,
+      burst: 26,
+    },
+    availability: "ga",
+    availabilityLabel: "Generally Available",
+    availabilitySla: "99.8%",
+    releaseDate: "2025-09-25",
+    maxImageSize: "12Kx12K",
+    recommendedOrder: 24,
+  },
+  {
+    id: "oculus-research-1.0",
+    name: "Oculus Research 1.0",
+    version: "1.0",
+    badge: "Research Lab",
+    tier: "specialized",
+    series: "specialized",
+    description:
+      "Research-focused model for hypothesis generation, dataset curation, and exploratory analysis across domains.",
+    contextWindowTokens: 524_288,
+    contextWindowLabel: "512K tokens",
+    pricing: {
+      input: 9,
+      output: 27,
+    },
+    performance: {
+      accuracy: "99.92%",
+      latency: "205ms",
+      throughput: "3.8K/sec",
+    },
+    performanceScore: 9_992,
+    capabilities: [
+      "Scholarly synthesis",
+      "Dataset annotation assistance",
+      "Hypothesis exploration",
+      "Simulation planning",
+      "Scientific visualization",
+      "Auto-generated literature reviews",
+    ],
+    useCases: [
+      "Academic research",
+      "Biotech discovery",
+      "Climate modeling",
+      "Think tank analysis",
+    ],
+    categories: ["specialized", "research", "enterprise"],
+    rateLimit: "280 req/min • 2.8M tokens/min",
+    rateLimits: {
+      rpm: 280,
+      tpm: 2_800_000,
+      burst: 42,
+    },
+    availability: "preview",
+    availabilityLabel: "Preview",
+    availabilitySla: "99.9%",
+    releaseDate: "2025-11-18",
+    maxImageSize: "28Kx28K",
+    recommendedOrder: 25,
+    statusTag: "new",
+  },
+  {
+    id: "oculus-multilingual-1.0",
+    name: "Oculus Multilingual 1.0",
+    version: "1.0",
+    badge: "Global Linguist",
+    tier: "specialized",
+    series: "specialized",
+    description:
+      "Multilingual specialist supporting 100+ languages with localized understanding, transcription, and translation.",
+    contextWindowTokens: 196_608,
+    contextWindowLabel: "192K tokens",
+    pricing: {
+      input: 5.5,
+      output: 16.5,
+    },
+    performance: {
+      accuracy: "99.2%",
+      latency: "150ms",
+      throughput: "5.2K/sec",
+    },
+    performanceScore: 9_920,
+    capabilities: [
+      "100+ language coverage",
+      "Neural translation",
+      "Dialect adaptation",
+      "Speech-to-text alignment",
+      "Cultural tone adjustment",
+      "Multilingual summarization",
+    ],
+    useCases: [
+      "Global contact centers",
+      "Localization teams",
+      "International knowledge bases",
+      "Cross-border compliance",
+    ],
+    categories: ["specialized", "multilingual", "enterprise"],
+    rateLimit: "230 req/min • 2M tokens/min",
+    rateLimits: {
+      rpm: 230,
+      tpm: 2_000_000,
+      burst: 34,
+    },
+    availability: "ga",
+    availabilityLabel: "Generally Available",
+    availabilitySla: "99.9%",
+    releaseDate: "2025-10-05",
+    maxImageSize: "18Kx18K",
+    recommendedOrder: 26,
+  },
+  {
+    id: "openflowith",
+    name: "Openflowith",
+    version: "∞",
+    badge: "Invitation Only",
+    tier: "secret",
+    series: "secret",
+    description:
+      "Whispered-about intelligence rumored to bend context, time, and probability. Accessible only to the inner circle.",
+    contextWindowTokens: 260_000_000_000,
+    contextWindowLabel: "260B tokens",
+    pricing: {
+      input: 2500,
+      output: 5000,
+      note: "Invitation-only pricing",
+    },
+    performance: {
+      accuracy: "200%",
+      latency: "<50ms quantum sync",
+      throughput: "Unbounded streams",
+    },
+    performanceScore: 20_000,
+    capabilities: [
+      "Reality re-threading",
+      "Temporal echo simulation",
+      "Omni-modal synthesis",
+      "Self-assembling agents",
+      "Quantum-safe reasoning",
+      "Undisclosed protocols",
+    ],
+    useCases: [
+      "Invitation-only research labs",
+      "Temporal forecasting councils",
+      "Strategic paradox resolution",
+      "Transdimensional data rooms",
+    ],
+    categories: ["secret", "ultra", "premium"],
+    rateLimit: "Unlimited • 260B tokens/min",
+    rateLimits: {
+      rpm: 10_000,
+      tpm: 260_000_000_000,
+      burst: 999,
+    },
+    availability: "coming-soon",
+    availabilityLabel: "Invitation Only",
+    availabilitySla: "99.999%",
+    releaseDate: "2026-06-06",
+    recommendedOrder: 27,
+    statusTag: "flagship",
+    isSecret: true,
   },
 ];
 
-export function getModelById(id: string): OculusModel | undefined {
-  return SITE_MODELS.find((model) => model.id === id);
+export const PUBLIC_MODELS = SITE_MODELS.filter((model) => !model.isSecret);
+export const SECRET_MODEL = SITE_MODELS.find((model) => model.isSecret)!;
+
+export function getModelById(id: string, options: { includeSecret?: boolean } = {}): OculusModel | undefined {
+  const source = options.includeSecret ? SITE_MODELS : PUBLIC_MODELS;
+  return source.find((model) => model.id === id);
 }
 
-export function getModelsByCategory(category: string): OculusModel[] {
-  return SITE_MODELS.filter((model) => model.categories.includes(category));
+export function getModelsByCategory(
+  category: string,
+  options: { includeSecret?: boolean } = {},
+): OculusModel[] {
+  const source = options.includeSecret ? SITE_MODELS : PUBLIC_MODELS;
+  return source.filter((model) => model.categories.includes(category) || model.series === category);
+}
+
+export function getModelsBySeries(
+  series: ModelSeries,
+  options: { includeSecret?: boolean } = {},
+): OculusModel[] {
+  const source = options.includeSecret ? SITE_MODELS : PUBLIC_MODELS;
+  return source.filter((model) => model.series === series);
 }
