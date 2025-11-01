@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { useMemo, useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { SITE_MODELS } from "@/lib/models";
+import { PUBLIC_MODELS } from "@/lib/models";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -15,10 +15,10 @@ export default function ModelsPage() {
   const [selected, setSelected] = useState<string[]>([]);
 
   const filteredModels = useMemo(() => {
-    let models = SITE_MODELS;
+    let models = PUBLIC_MODELS;
 
     if (filter !== "all") {
-      models = models.filter((model) => model.categories.includes(filter));
+      models = models.filter((model) => model.categories.includes(filter) || model.series === filter);
     }
 
     switch (sort) {
@@ -109,15 +109,15 @@ export default function ModelsPage() {
           </div>
 
           <div className="space-y-3 lg:col-span-3">
-            <h2 className="text-lg font-semibold">Filter By Use Case</h2>
+            <h2 className="text-lg font-semibold">Filter By Series</h2>
             <div className="flex flex-wrap gap-3">
               {[
                 { id: "all", label: "All" },
-                { id: "general", label: "General Purpose" },
-                { id: "multimodal", label: "Multimodal" },
-                { id: "vision", label: "Vision Specialist" },
-                { id: "enterprise", label: "Enterprise" },
-                { id: "lightweight", label: "Low Latency" },
+                { id: "foundation", label: "Foundation" },
+                { id: "ultra", label: "Ultra" },
+                { id: "pro", label: "Pro" },
+                { id: "mini", label: "Mini" },
+                { id: "specialized", label: "Specialized" },
               ].map((option) => (
                 <button
                   key={option.id}
@@ -146,8 +146,19 @@ export default function ModelsPage() {
                   >
                     <Card className="group h-full border-white/10 bg-white/5 backdrop-blur-xl transition-all hover:-translate-y-1 hover:border-white/25">
                       <CardHeader>
-                        <div className="flex items-center justify-between">
-                          <Badge className="bg-white text-black">{model.badge}</Badge>
+                        <div className="flex items-center justify-between gap-2 flex-wrap">
+                          <div className="flex gap-2 items-center">
+                            <Badge className="bg-white text-black">{model.badge}</Badge>
+                            {model.statusTag === "new" && (
+                              <Badge className="bg-gradient-to-r from-green-400 to-emerald-500 text-black border-0">New</Badge>
+                            )}
+                            {model.statusTag === "coming-soon" && (
+                              <Badge className="bg-gradient-to-r from-blue-400 to-cyan-500 text-black border-0">Coming Soon</Badge>
+                            )}
+                            {model.statusTag === "flagship" && (
+                              <Badge className="bg-gradient-to-r from-purple-400 to-pink-500 text-black border-0">Flagship</Badge>
+                            )}
+                          </div>
                           <button
                             onClick={() => toggleCompare(model.id)}
                             className={`rounded-full border px-3 py-1 text-xs transition ${
@@ -207,9 +218,12 @@ export default function ModelsPage() {
                           </ul>
                         </div>
 
-                        <div className="rounded-xl border border-white/10 bg-black/30 p-4">
-                          <p className="text-xs uppercase tracking-wide text-white/40">Pricing (per 1M tokens)</p>
-                          <div className="mt-3 flex items-center justify-between text-sm text-white/80">
+                        <div className="rounded-xl border border-white/10 bg-black/30 p-4 space-y-3">
+                          <div className="flex items-center justify-between">
+                            <p className="text-xs uppercase tracking-wide text-white/40">Pricing (per 1M tokens)</p>
+                            <p className="text-xs uppercase tracking-wide text-white/40">Released {model.releaseDate}</p>
+                          </div>
+                          <div className="flex items-center justify-between text-sm text-white/80">
                             <div>
                               <p className="text-white/60">Input</p>
                               <p className="text-lg font-semibold text-white">${model.pricing.input.toFixed(2)}</p>
@@ -220,11 +234,14 @@ export default function ModelsPage() {
                             </div>
                             <div className="text-right">
                               <p className="text-white/60">Availability</p>
-                              <p className="text-sm font-medium uppercase text-white">
-                                {model.availability.toUpperCase()}
+                              <p className="text-sm font-medium text-white">
+                                {model.availabilityLabel}
                               </p>
                             </div>
                           </div>
+                          {model.pricing.note ? (
+                            <p className="text-xs text-white/60">{model.pricing.note}</p>
+                          ) : null}
                         </div>
 
                         <div className="flex flex-wrap gap-3">
@@ -276,7 +293,7 @@ export default function ModelsPage() {
                   <tr className="border-b border-white/10 text-xs uppercase tracking-wide text-white/40">
                     <th className="px-4 py-3">Capability</th>
                     {selected.map((modelId) => {
-                      const model = SITE_MODELS.find((item) => item.id === modelId)!;
+                      const model = PUBLIC_MODELS.find((item) => item.id === modelId)!;
                       return (
                         <th key={model.id} className="px-4 py-3 font-medium text-white">
                           {model.name}
@@ -290,47 +307,47 @@ export default function ModelsPage() {
                   {[
                     {
                       label: "Context Window",
-                      value: (model: (typeof SITE_MODELS)[number]) => model.contextWindowLabel,
+                      value: (model: (typeof PUBLIC_MODELS)[number]) => model.contextWindowLabel,
                     },
                     {
                       label: "Accuracy",
-                      value: (model: (typeof SITE_MODELS)[number]) => model.performance.accuracy,
+                      value: (model: (typeof PUBLIC_MODELS)[number]) => model.performance.accuracy,
                     },
                     {
                       label: "Latency",
-                      value: (model: (typeof SITE_MODELS)[number]) => model.performance.latency,
+                      value: (model: (typeof PUBLIC_MODELS)[number]) => model.performance.latency,
                     },
                     {
                       label: "Throughput",
-                      value: (model: (typeof SITE_MODELS)[number]) => model.performance.throughput,
+                      value: (model: (typeof PUBLIC_MODELS)[number]) => model.performance.throughput,
                     },
                     {
                       label: "Pricing (Input / Output)",
-                      value: (model: (typeof SITE_MODELS)[number]) => `$${model.pricing.input.toFixed(2)} / $${
+                      value: (model: (typeof PUBLIC_MODELS)[number]) => `${model.pricing.input.toFixed(2)} / ${
                         model.pricing.output.toFixed(2)
                       }`,
                     },
                     {
                       label: "Availability",
-                      value: (model: (typeof SITE_MODELS)[number]) => model.availabilityLabel,
+                      value: (model: (typeof PUBLIC_MODELS)[number]) => model.availabilityLabel,
                     },
                     {
                       label: "Rate Limit",
-                      value: (model: (typeof SITE_MODELS)[number]) => model.rateLimit,
+                      value: (model: (typeof PUBLIC_MODELS)[number]) => model.rateLimit,
                     },
                     {
                       label: "Top Capability",
-                      value: (model: (typeof SITE_MODELS)[number]) => model.capabilities[0],
+                      value: (model: (typeof PUBLIC_MODELS)[number]) => model.capabilities[0],
                     },
                     {
                       label: "Ideal Use Case",
-                      value: (model: (typeof SITE_MODELS)[number]) => model.useCases[0],
+                      value: (model: (typeof PUBLIC_MODELS)[number]) => model.useCases[0],
                     },
                   ].map((row) => (
                     <tr key={row.label} className="border-b border-white/5">
                       <td className="px-4 py-3 font-semibold text-white">{row.label}</td>
                       {selected.map((modelId) => {
-                        const model = SITE_MODELS.find((item) => item.id === modelId)!;
+                        const model = PUBLIC_MODELS.find((item) => item.id === modelId)!;
                         return (
                           <td key={model.id} className="px-4 py-3 text-white/70">
                             {row.value(model)}
