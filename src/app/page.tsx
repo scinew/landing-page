@@ -426,6 +426,7 @@ export default function Home() {
             <div className="flex flex-col md:flex-row justify-between items-center gap-6">
               <div className="font-mono text-sm uppercase tracking-[0.3em] text-white/60">Oculus AI</div>
               <div className="flex gap-6 text-sm text-white/40">
+                <Link href="/models" className="hover:text-white transition-colors">Models</Link>
                 <Link href="/register" className="hover:text-white transition-colors">Register</Link>
                 <Link href="/chat" className="hover:text-white transition-colors">Chat</Link>
                 <Link href="/checkout" className="hover:text-white transition-colors">Plans</Link>
