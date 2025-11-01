@@ -420,7 +420,7 @@ export default function Documentation() {
                     { icon: Zap, title: "Scene Understanding", description: "Comprehend complex scenes and contexts" },
                     { icon: Code, title: "Semantic Segmentation", description: "Pixel-level image understanding" },
                     { icon: BookOpen, title: "Visual Q&A", description: "Answer questions about image content" },
-                  ].map((capability, index) => (
+                  ].map((capability) => (
                     <Card key={capability.title} className="bg-white/5 border-white/10 backdrop-blur-sm hover:bg-white/10 transition-all">
                       <CardHeader>
                         <capability.icon className="w-10 h-10 mb-3 text-white" />
