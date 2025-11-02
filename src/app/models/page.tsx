@@ -52,8 +52,8 @@ export default function ModelsPage() {
       <SiteHeader />
       <div className="site-shell relative min-h-screen bg-black text-white">
         <div className="absolute inset-0 -z-10">
-          <div className="absolute top-24 left-10 h-96 w-96 rounded-full bg-white/10 blur-3xl" />
-          <div className="absolute bottom-24 right-10 h-[30rem] w-[30rem] rounded-full bg-white/10 blur-3xl" />
+          <div className="absolute left-1/2 top-24 h-56 w-56 -translate-x-1/2 rounded-full bg-white/10 blur-3xl sm:left-10 sm:h-72 sm:w-72 sm:translate-x-0 lg:h-96 lg:w-96" />
+          <div className="absolute bottom-24 right-1/2 h-56 w-56 translate-x-1/2 rounded-full bg-white/10 blur-3xl sm:right-10 sm:h-72 sm:w-72 sm:translate-x-0 lg:h-[30rem] lg:w-[30rem]" />
         </div>
 
         <div className="relative mx-auto max-w-7xl px-4 pt-24 sm:px-6 lg:px-8">
@@ -66,10 +66,10 @@ export default function ModelsPage() {
           <Badge variant="outline" className="mb-6 border-white/30 bg-transparent text-white">
             Oculus AI Platform
           </Badge>
-          <h1 className="text-4xl font-semibold tracking-tight sm:text-5xl lg:text-6xl">
+          <h1 className="text-3xl font-semibold tracking-tight text-balance sm:text-5xl lg:text-6xl">
             Oculus Model Portfolio
           </h1>
-          <p className="mt-4 text-lg text-white/60">
+          <p className="mt-4 max-w-2xl text-balance text-base text-white/60 sm:text-lg">
             Explore our suite of production-ready vision models with tiered pricing and enterprise-grade SLAs.
           </p>
           <div className="mt-6 flex flex-wrap items-center justify-center gap-4">
@@ -82,9 +82,9 @@ export default function ModelsPage() {
           </div>
         </motion.div>
 
-        <div className="mb-12 grid gap-6 rounded-2xl border border-white/10 bg-white/5 p-6 backdrop-blur-xl lg:grid-cols-4">
+        <div className="mb-12 grid gap-6 rounded-2xl border border-white/10 bg-white/5 p-4 backdrop-blur-xl sm:p-6 lg:grid-cols-4">
           <div className="space-y-3">
-            <h2 className="text-lg font-semibold">Sort By</h2>
+            <h2 className="text-base font-semibold sm:text-lg">Sort By</h2>
             <div className="grid gap-2">
               {[
                 { id: "recommended", label: "Recommended" },
@@ -109,7 +109,7 @@ export default function ModelsPage() {
           </div>
 
           <div className="space-y-3 lg:col-span-3">
-            <h2 className="text-lg font-semibold">Filter By Series</h2>
+            <h2 className="text-base font-semibold sm:text-lg">Filter By Series</h2>
             <div className="flex flex-wrap gap-3">
               {[
                 { id: "all", label: "All" },
@@ -176,7 +176,7 @@ export default function ModelsPage() {
                         </CardDescription>
                       </CardHeader>
                       <CardContent className="space-y-6">
-                        <div className="grid grid-cols-2 gap-3 text-sm text-white/70">
+                        <div className="grid grid-cols-1 gap-4 text-sm text-white/70 sm:grid-cols-2">
                           <div>
                             <p className="text-xs uppercase tracking-wide text-white/40">Context Window</p>
                             <p className="font-semibold text-white">{model.contextWindowLabel}</p>
@@ -271,7 +271,7 @@ export default function ModelsPage() {
             initial={{ opacity: 0, y: 16 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.4 }}
-            className="mb-16 rounded-2xl border border-white/10 bg-white/5 p-6 backdrop-blur-xl"
+            className="mb-16 rounded-2xl border border-white/10 bg-white/5 p-4 backdrop-blur-xl sm:p-6"
           >
             <div className="mb-6 flex flex-wrap items-center justify-between gap-4">
               <div>

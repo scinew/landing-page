@@ -130,7 +130,7 @@ export default function Home() {
         >
           <div className="absolute inset-0 overflow-hidden">
             <motion.div
-              className="absolute top-1/4 left-1/4 w-96 h-96 bg-white/5 rounded-full blur-3xl"
+              className="absolute top-12 left-1/2 h-56 w-56 -translate-x-1/2 rounded-full bg-white/5 blur-3xl sm:top-1/4 sm:left-1/4 sm:h-72 sm:w-72 sm:translate-x-0 lg:h-96 lg:w-96"
               animate={{
                 scale: [1, 1.2, 1],
                 opacity: [0.3, 0.5, 0.3],
@@ -142,7 +142,7 @@ export default function Home() {
               }}
             />
             <motion.div
-              className="absolute bottom-1/4 right-1/4 w-96 h-96 bg-white/5 rounded-full blur-3xl"
+              className="absolute bottom-12 right-1/2 h-56 w-56 translate-x-1/2 rounded-full bg-white/5 blur-3xl sm:bottom-1/4 sm:right-1/4 sm:h-72 sm:w-72 sm:translate-x-0 lg:h-96 lg:w-96"
               animate={{
                 scale: [1.2, 1, 1.2],
                 opacity: [0.5, 0.3, 0.5],
@@ -155,7 +155,7 @@ export default function Home() {
             />
           </div>
 
-          <div className="relative z-10 max-w-5xl mx-auto text-center">
+          <div className="relative z-10 mx-auto max-w-4xl px-2 text-center sm:px-0">
             <motion.div
               initial={{ opacity: 0, y: 30 }}
               animate={{ opacity: 1, y: 0 }}
@@ -174,7 +174,7 @@ export default function Home() {
                 initial={{ opacity: 0, y: 30 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ duration: 0.8, delay: 0.2 }}
-                className="relative text-6xl sm:text-7xl lg:text-8xl font-bold mb-6 tracking-tight"
+                className="relative mb-6 text-balance text-5xl font-bold tracking-tight sm:text-6xl md:text-7xl lg:text-8xl"
               >
                 <span className="relative">
                   Oculus AI
@@ -189,7 +189,7 @@ export default function Home() {
                 initial={{ opacity: 0, y: 30 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ duration: 0.8, delay: 0.4 }}
-                className="relative text-xl sm:text-2xl text-gray-400 mb-12 max-w-3xl mx-auto"
+                className="relative mx-auto mb-12 max-w-3xl text-balance text-lg text-gray-400 sm:text-xl md:text-2xl"
               >
                 Unleashing the power of advanced vision models to see beyond the visible with glassmorphism-inspired clarity.
               </motion.p>
@@ -199,18 +199,18 @@ export default function Home() {
               initial={{ opacity: 0, y: 30 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.8, delay: 0.6 }}
-              className="flex flex-col sm:flex-row gap-4 justify-center items-center"
+              className="flex flex-col items-center justify-center gap-4 sm:flex-row"
             >
-              <Button size="lg" variant="inverted" className="px-8 py-6 text-lg group" asChild>
+              <Button size="lg" variant="inverted" className="w-full px-8 py-6 text-lg group sm:w-auto" asChild>
                 <Link href="/chat">
                   Try Now
-                  <ArrowRight className="ml-2 w-5 h-5 group-hover:translate-x-1 transition-transform" />
+                  <ArrowRight className="ml-2 h-5 w-5 transition-transform group-hover:translate-x-1" />
                 </Link>
               </Button>
               <Button
                 size="lg"
                 variant="outline"
-                className="px-8 py-6 text-lg"
+                className="w-full px-8 py-6 text-lg sm:w-auto"
                 asChild
               >
                 <Link href="/register">
@@ -245,17 +245,17 @@ export default function Home() {
               whileInView={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.8 }}
               viewport={{ once: true }}
-              className="text-center mb-20"
+              className="mb-20 text-center"
             >
-              <h2 className="text-4xl sm:text-5xl lg:text-6xl font-bold mb-6">
+              <h2 className="mb-6 text-balance text-3xl font-bold sm:text-4xl md:text-5xl lg:text-6xl">
                 Why Choose Oculus AI?
               </h2>
-              <p className="text-xl text-gray-400 max-w-3xl mx-auto">
+              <p className="mx-auto max-w-3xl text-balance text-lg text-gray-400 sm:text-xl">
                 Cutting-edge vision models designed for precision, speed, and scalability
               </p>
             </motion.div>
 
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+            <div className="grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-3 md:gap-8">
               {FEATURES.map((feature, index) => (
                 <motion.div
                   key={feature.title}
@@ -289,21 +289,21 @@ export default function Home() {
               whileInView={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.8 }}
               viewport={{ once: true }}
-              className="text-center mb-20"
+              className="mb-20 text-center"
             >
-              <Badge variant="outline" className="mx-auto w-fit border-white/30 bg-transparent text-white hover:bg-white/10 mb-6">
-                <BarChart3 className="w-3 h-3 mr-2" />
+              <Badge variant="outline" className="mx-auto mb-6 w-fit border-white/30 bg-transparent text-white hover:bg-white/10">
+                <BarChart3 className="mr-2 h-3 w-3" />
                 Performance Benchmarks
               </Badge>
-              <h2 className="text-4xl sm:text-5xl lg:text-6xl font-bold mb-6">
+              <h2 className="mb-6 text-balance text-3xl font-bold sm:text-4xl md:text-5xl lg:text-6xl">
                 Industry-Leading Performance
               </h2>
-              <p className="text-xl text-gray-400 max-w-3xl mx-auto">
+              <p className="mx-auto max-w-3xl text-balance text-lg text-gray-400 sm:text-xl">
                 Compare the performance metrics of our vision models across key dimensions
               </p>
             </motion.div>
 
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-12">
+            <div className="grid grid-cols-1 gap-8 lg:grid-cols-2 lg:gap-12">
               {BENCHMARK_DATA.map((model, idx) => (
                 <motion.div
                   key={model.model}
@@ -319,11 +319,11 @@ export default function Home() {
                       <CardTitle className="text-white text-2xl font-mono">{model.model}</CardTitle>
                     </CardHeader>
                     <CardContent className="relative z-10">
-                      <div className="grid grid-cols-2 gap-6">
+                      <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 sm:gap-6">
                         {model.metrics.map((metric) => (
                           <div
                             key={metric.label}
-                            className="rounded-lg border border-white/10 bg-white/5 p-4 backdrop-blur-sm hover:border-white/30 transition-all"
+                            className="rounded-lg border border-white/10 bg-white/5 p-4 backdrop-blur-sm transition-all hover:border-white/30"
                           >
                             <metric.icon className="w-6 h-6 mb-2 text-white/70" />
                             <div className="text-xs text-gray-400 mb-1">{metric.label}</div>
@@ -355,17 +355,17 @@ export default function Home() {
               whileInView={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.8 }}
               viewport={{ once: true }}
-              className="text-center mb-20"
+              className="mb-20 text-center"
             >
-              <h2 className="text-4xl sm:text-5xl lg:text-6xl font-bold mb-6">
+              <h2 className="mb-6 text-balance text-3xl font-bold sm:text-4xl md:text-5xl lg:text-6xl">
                 Choose Your Plan
               </h2>
-              <p className="text-xl text-gray-400 max-w-3xl mx-auto">
+              <p className="mx-auto max-w-3xl text-balance text-lg text-gray-400 sm:text-xl">
                 Flexible pricing to scale with your needs
               </p>
             </motion.div>
 
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+            <div className="grid grid-cols-1 gap-6 sm:gap-8 md:grid-cols-2 lg:grid-cols-3">
               {PRICING_TIERS.map((tier, index) => (
                 <motion.div
                   key={tier.name}

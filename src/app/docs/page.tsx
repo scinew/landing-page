@@ -1,10 +1,11 @@
 "use client";
 
-import { useMemo, useState } from "react";
-import { motion } from "framer-motion";
+import { Fragment, useMemo, useState } from "react";
+import { AnimatePresence, motion } from "framer-motion";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
+import { SiteHeader } from "@/components/site-header";
 import {
   ArrowLeft,
   BarChart3,
@@ -24,6 +25,8 @@ import {
   TrendingUp,
   Server,
   Workflow,
+  Menu,
+  X,
 } from "lucide-react";
 import Link from "next/link";
 import { SITE_MODELS, SECRET_MODEL } from "@/lib/models";
@@ -237,6 +240,7 @@ const getComparisonInfo = (modelId: string) => {
 
 export default function Documentation() {
   const [searchTerm, setSearchTerm] = useState("");
+  const [mobileNavOpen, setMobileNavOpen] = useState(false);
   const [calculatorModel, setCalculatorModel] = useState<string>(SORTED_MODELS[1]?.id ?? SORTED_MODELS[0]?.id ?? "");
   const [inputTokens, setInputTokens] = useState(5000);
   const [outputTokens, setOutputTokens] = useState(2000);
@@ -263,251 +267,306 @@ export default function Documentation() {
 
   const maxPerformanceScore = useMemo(() => Math.max(...SORTED_MODELS.map((model) => model.performanceScore)), []);
 
+  const renderNavigationLinks = (onNavigate?: () => void) => {
+    if (filteredNav.length === 0) {
+      return <p className="text-sm text-white/50">No sections match “{searchTerm}”</p>;
+    }
+
+    return filteredNav.map((item) => (
+      <a
+        key={item.id}
+        href={`#${item.id}`}
+        className="block rounded-md px-3 py-2 text-sm text-white/70 transition hover:bg-white/10 hover:text-white"
+        onClick={() => onNavigate?.()}
+      >
+        {item.label}
+      </a>
+    ));
+  };
+
   return (
-    <div className="relative min-h-screen bg-black text-white">
-      <div className="pointer-events-none absolute inset-0 overflow-hidden">
-        <div className="absolute top-1/4 left-1/4 h-96 w-96 rounded-full bg-white/5 blur-3xl" />
-        <div className="absolute bottom-1/4 right-1/4 h-96 w-96 rounded-full bg-white/5 blur-3xl" />
-      </div>
+    <Fragment>
+      <SiteHeader />
+      <div className="site-shell relative min-h-screen bg-black text-white">
+        <div className="pointer-events-none absolute inset-0 overflow-hidden">
+          <div className="absolute top-1/4 left-1/4 h-96 w-96 rounded-full bg-white/5 blur-3xl" />
+          <div className="absolute bottom-1/4 right-1/4 h-96 w-96 rounded-full bg-white/5 blur-3xl" />
+        </div>
 
-      <div className="relative z-10 mx-auto max-w-6xl px-4 py-12 sm:px-6 lg:px-8">
-        <Button asChild variant="outline" className="mb-8">
-          <Link href="/">
-            <ArrowLeft className="mr-2 h-4 w-4" />
-            Back to Home
-          </Link>
-        </Button>
+        <div className="relative z-10 mx-auto max-w-6xl px-4 py-12 sm:px-6 lg:px-8">
+          <Button asChild variant="outline" className="mb-8">
+            <Link href="/">
+              <ArrowLeft className="mr-2 h-4 w-4" />
+              Back to Home
+            </Link>
+          </Button>
 
-        <motion.div initial={{ opacity: 0, y: 30 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.8 }} className="mb-16">
-          <Badge className="mb-6 bg-white text-black hover:bg-gray-200">
-            <BookOpen className="mr-2 h-3 w-3" />
-            Documentation
-          </Badge>
-          <h1 className="text-5xl font-bold sm:text-6xl">Oculus AI Documentation</h1>
-          <p className="mt-4 max-w-3xl text-xl text-gray-400">
-            Complete guide to integrating Oculus AI vision models, pricing structures, migration paths, and performance benchmarks across our 27-model portfolio.
-          </p>
-        </motion.div>
+          <motion.div initial={{ opacity: 0, y: 30 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.8 }} className="mb-8">
+            <Badge className="mb-6 bg-white text-black hover:bg-gray-200">
+              <BookOpen className="mr-2 h-3 w-3" />
+              Documentation
+            </Badge>
+            <h1 className="text-4xl font-bold text-balance sm:text-5xl lg:text-6xl">Oculus AI Documentation</h1>
+            <p className="mt-4 max-w-3xl text-balance text-base text-gray-400 sm:text-lg md:text-xl">
+              Complete guide to integrating Oculus AI vision models, pricing structures, migration paths, and performance benchmarks across our 27-model portfolio.
+            </p>
+          </motion.div>
 
-        <div className="mb-16 grid grid-cols-1 gap-8 lg:grid-cols-4">
-          <div className="lg:col-span-1">
-            <div className="sticky top-8 space-y-4">
-              <div className="relative">
-                <Search className="absolute left-3 top-2.5 h-4 w-4 text-white/40" />
-                <input
-                  type="text"
-                  placeholder="Search sections..."
-                  value={searchTerm}
-                  onChange={(event) => setSearchTerm(event.target.value)}
-                  className="w-full rounded-lg border border-white/10 bg-black/60 py-2 pl-10 pr-3 text-sm text-white placeholder:text-white/40 focus:border-white/25 focus:outline-none"
-                />
-              </div>
+          <Button
+            variant="outline"
+            className="mb-6 flex w-full items-center justify-center gap-2 lg:hidden"
+            onClick={() => setMobileNavOpen(!mobileNavOpen)}
+          >
+            {mobileNavOpen ? <X className="h-4 w-4" /> : <Menu className="h-4 w-4" />}
+            {mobileNavOpen ? "Hide navigation" : "Table of Contents"}
+          </Button>
 
-              <div className="space-y-2">
-                <h3 className="text-sm font-semibold text-gray-400">Navigation</h3>
-                {filteredNav.length === 0 ? (
-                  <p className="text-sm text-white/50">No sections match "{searchTerm}"</p>
-                ) : (
-                  filteredNav.map((item) => (
-                    <a
-                      key={item.id}
-                      href={`#${item.id}`}
-                      className="block rounded-md px-3 py-2 text-sm text-white/70 transition hover:bg-white/10 hover:text-white"
-                    >
-                      {item.label}
-                    </a>
-                  ))
-                )}
-              </div>
+          <AnimatePresence>
+            {mobileNavOpen && (
+              <motion.div
+                initial={{ opacity: 0, height: 0 }}
+                animate={{ opacity: 1, height: "auto" }}
+                exit={{ opacity: 0, height: 0 }}
+                className="mb-8 overflow-hidden rounded-lg border border-white/10 bg-white/5 p-4 backdrop-blur-sm lg:hidden"
+              >
+                <div className="space-y-4">
+                  <div className="relative">
+                    <Search className="absolute left-3 top-2.5 h-4 w-4 text-white/40" />
+                    <input
+                      type="text"
+                      placeholder="Search sections..."
+                      value={searchTerm}
+                      onChange={(event) => setSearchTerm(event.target.value)}
+                      className="w-full rounded-lg border border-white/10 bg-black/60 py-2 pl-10 pr-3 text-sm text-white placeholder:text-white/40 focus:border-white/25 focus:outline-none"
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <h3 className="text-sm font-semibold text-gray-400">Navigation</h3>
+                    {renderNavigationLinks(() => setMobileNavOpen(false))}
+                  </div>
+                  <Card className="border-white/10 bg-white/5 backdrop-blur-sm">
+                    <CardHeader>
+                      <CardTitle className="text-sm text-white">Need a guided tour?</CardTitle>
+                      <CardDescription className="text-white/60">
+                        Book a live onboarding session with an Oculus solutions architect.
+                      </CardDescription>
+                    </CardHeader>
+                    <CardContent>
+                      <Button variant="inverted" className="w-full">Schedule session</Button>
+                    </CardContent>
+                  </Card>
+                </div>
+              </motion.div>
+            )}
+          </AnimatePresence>
 
-              <Card className="border-white/10 bg-white/5 backdrop-blur-sm">
-                <CardHeader>
-                  <CardTitle className="text-sm text-white">Need a guided tour?</CardTitle>
-                  <CardDescription className="text-white/60">
-                    Book a live onboarding session with an Oculus solutions architect.
-                  </CardDescription>
-                </CardHeader>
-                <CardContent>
-                  <Button variant="inverted" className="w-full">Schedule session</Button>
-                </CardContent>
-              </Card>
-            </div>
-          </div>
+          <div className="mb-16 grid grid-cols-1 gap-8 lg:grid-cols-4">
+            <div className="hidden lg:col-span-1 lg:block">
+              <div className="sticky top-8 space-y-4">
+                <div className="relative">
+                  <Search className="absolute left-3 top-2.5 h-4 w-4 text-white/40" />
+                  <input
+                    type="text"
+                    placeholder="Search sections..."
+                    value={searchTerm}
+                    onChange={(event) => setSearchTerm(event.target.value)}
+                    className="w-full rounded-lg border border-white/10 bg-black/60 py-2 pl-10 pr-3 text-sm text-white placeholder:text-white/40 focus:border-white/25 focus:outline-none"
+                  />
+                </div>
 
-          <div className="space-y-16 lg:col-span-3">
-            <Section id="getting-started" title="Getting Started">
-              <div className="grid gap-6 md:grid-cols-2">
+                <div className="space-y-2">
+                  <h3 className="text-sm font-semibold text-gray-400">Navigation</h3>
+                  {renderNavigationLinks()}
+                </div>
+
                 <Card className="border-white/10 bg-white/5 backdrop-blur-sm">
                   <CardHeader>
-                    <CardTitle className="text-white">Installation</CardTitle>
+                    <CardTitle className="text-sm text-white">Need a guided tour?</CardTitle>
                     <CardDescription className="text-white/60">
-                      Install the Oculus AI SDK using npm or pip
-                    </CardDescription>
-                  </CardHeader>
-                  <CardContent className="space-y-4 text-sm text-gray-200">
-                    <div className="rounded-lg border border-white/10 bg-black/60 p-4">
-                      <code>
-                        <div># JavaScript/TypeScript</div>
-                        <div>npm install @oculus-ai/sdk</div>
-                        <div className="mt-4"># Python</div>
-                        <div>pip install oculus-ai</div>
-                      </code>
-                    </div>
-                    <p>
-                      Configure your API key via <code className="rounded bg-white/10 px-1">OCULUS_API_KEY</code> and initialize the client inside your application bootstrap.
-                    </p>
-                  </CardContent>
-                </Card>
-
-                <Card className="border-white/10 bg-white/5 backdrop-blur-sm">
-                  <CardHeader>
-                    <CardTitle className="text-white">Quick Start</CardTitle>
-                    <CardDescription className="text-white/60">
-                      Analyze imagery in less than ten lines of code
+                      Book a live onboarding session with an Oculus solutions architect.
                     </CardDescription>
                   </CardHeader>
                   <CardContent>
-                    <div className="rounded-lg border border-white/10 bg-black/60 p-4 text-sm text-gray-200">
-                      <code>
-                        <div>import {"{ OculusAI }"} from "@oculus-ai/sdk";</div>
-                        <div className="mt-2">const client = new OculusAI({"{"}</div>
-                        <div>  apiKey: process.env.OCULUS_API_KEY,</div>
-                        <div>{`});`}</div>
-                        <div className="mt-2">const result = await client.analyze({"{"}</div>
-                        <div>  model: "oculus-1-0125",</div>
-                        <div>  image: imageUrl,</div>
-                        <div>  tasks: ["classification", "detection"],</div>
-                        <div>{`});`}</div>
-                      </code>
-                    </div>
+                    <Button variant="inverted" className="w-full">Schedule session</Button>
                   </CardContent>
                 </Card>
               </div>
-            </Section>
+            </div>
 
-            <Section id="authentication" title="Authentication">
-              <Card className="border-white/10 bg-white/5 backdrop-blur-sm">
-                <CardHeader>
-                  <CardTitle className="text-white">API Keys</CardTitle>
-                  <CardDescription className="text-white/60">
-                    Secure your API access with bearer tokens and scoped roles
-                  </CardDescription>
-                </CardHeader>
-                <CardContent className="space-y-4 text-gray-200">
-                  <p>All API requests require an API key embedded in the <code className="rounded bg-white/10 px-1">Authorization</code> header.</p>
-                  <div className="rounded-lg border border-white/10 bg-black/60 p-4 text-sm">
-                    <code>Authorization: Bearer YOUR_API_KEY</code>
-                  </div>
-                  <div className="flex items-start gap-3">
-                    <Shield className="mt-1 h-5 w-5 text-white" />
-                    <div>
-                      <p className="font-semibold text-white">Rotate keys every 90 days</p>
-                      <p className="text-white/60">Use the console or the `/v1/keys` endpoint to rotate credentials without downtime.</p>
-                    </div>
-                  </div>
-                </CardContent>
-              </Card>
-            </Section>
-
-            <Section id="models" title="Model Catalog">
-              <p className="mb-6 text-gray-300">
-                Oculus AI ships <strong>{SORTED_MODELS.length}</strong> vision-focused models spanning foundation, pro, mini, specialized, and ultra families. Each model includes explicit pricing, performance, and rate-limit metadata for transparent planning.
-              </p>
-              <div className="grid gap-6 md:grid-cols-2">
-                {SORTED_MODELS.slice(0, 6).map((model) => (
-                  <Card key={model.id} className="border-white/10 bg-white/5 backdrop-blur-sm">
+            <div className="space-y-16 lg:col-span-3">
+              <Section id="getting-started" title="Getting Started">
+                <div className="grid gap-6 md:grid-cols-2">
+                  <Card className="border-white/10 bg-white/5 backdrop-blur-sm">
                     <CardHeader>
-                      <Badge className="mb-4 w-fit bg-white text-black">{model.badge}</Badge>
-                      <CardTitle className="text-white text-2xl">{model.name}</CardTitle>
-                      <CardDescription className="text-white/60">{model.description}</CardDescription>
-                    </CardHeader>
-                    <CardContent className="space-y-3 text-sm text-gray-200">
-                      <div className="flex items-center gap-2">
-                        <Gauge className="h-4 w-4 text-white/60" />
-                        <span>Accuracy: {model.performance.accuracy}</span>
-                      </div>
-                      <div className="flex items-center gap-2">
-                        <Clock className="h-4 w-4 text-white/60" />
-                        <span>Latency: {model.performance.latency}</span>
-                      </div>
-                      <div className="flex items-center gap-2">
-                        <Layers className="h-4 w-4 text-white/60" />
-                        <span>Context: {model.contextWindowLabel}</span>
-                      </div>
-                    </CardContent>
-                  </Card>
-                ))}
-              </div>
-              <p className="mt-6 text-sm text-white/50">
-                Explore the full catalog and download spec sheets via the <Link href="/models" className="text-white underline">models directory</Link>.
-              </p>
-            </Section>
-
-            <Section id="pricing" title="Pricing">
-              <p className="text-gray-300">
-                Detailed pricing for every Oculus AI model, including per-token costs, bundled packages, volume discounts, and enterprise options. Pricing is transparent across all {SORTED_MODELS.length} models, including Openflowith's secret tier.
-              </p>
-
-              <div className="mt-8 grid gap-6 md:grid-cols-2">
-                {PRICING_PACKAGES.map((tier) => (
-                  <Card key={tier.name} className="border-white/10 bg-white/5 backdrop-blur-sm">
-                    <CardHeader>
-                      <CardTitle className="text-white text-xl">{tier.name}</CardTitle>
-                      <CardDescription className="text-white/60">{tier.description}</CardDescription>
+                      <CardTitle className="text-white">Installation</CardTitle>
+                      <CardDescription className="text-white/60">
+                        Install the Oculus AI SDK using npm or pip
+                      </CardDescription>
                     </CardHeader>
                     <CardContent className="space-y-4 text-sm text-gray-200">
-                      <div className="flex items-baseline gap-2 text-white">
-                        <span className="text-4xl font-semibold">{tier.price}</span>
-                        <span>{tier.period}</span>
+                      <div className="rounded-lg border border-white/10 bg-black/60 p-4">
+                        <code>
+                          <div># JavaScript/TypeScript</div>
+                          <div>npm install @oculus-ai/sdk</div>
+                          <div className="mt-4"># Python</div>
+                          <div>pip install oculus-ai</div>
+                        </code>
                       </div>
-                      <p className="text-white/50">{tier.tokens}</p>
-                      <ul className="space-y-2 text-white/80">
-                        {tier.includes.map((item) => (
-                          <li key={item} className="flex items-start gap-2">
-                            <Sparkles className="mt-0.5 h-4 w-4 text-white/50" />
-                            {item}
-                          </li>
-                        ))}
-                      </ul>
+                      <p>
+                        Configure your API key via <code className="rounded bg-white/10 px-1">OCULUS_API_KEY</code> and initialize the client inside your application bootstrap.
+                      </p>
                     </CardContent>
                   </Card>
-                ))}
-              </div>
 
-              <div className="mt-10 space-y-4">
-                <h3 className="text-2xl font-semibold">Per-model pricing (per 1K tokens)</h3>
-                <div className="overflow-x-auto">
-                  <table className="min-w-full divide-y divide-white/10 text-left text-sm text-white/80">
-                    <thead>
-                      <tr className="bg-white/5 text-white">
-                        <th className="px-4 py-3 font-medium">Model</th>
-                        <th className="px-4 py-3 font-medium">Tier</th>
-                        <th className="px-4 py-3 font-medium">Input</th>
-                        <th className="px-4 py-3 font-medium">Output</th>
-                        <th className="px-4 py-3 font-medium">Context</th>
-                        <th className="px-4 py-3 font-medium">Notes</th>
-                      </tr>
-                    </thead>
-                    <tbody className="divide-y divide-white/10">
-                      {SORTED_MODELS.map((model) => (
-                        <tr key={model.id} className="hover:bg-white/5">
-                          <td className="px-4 py-3 text-white">{model.name}</td>
-                          <td className="px-4 py-3 capitalize">{model.tier}</td>
-                          <td className="px-4 py-3">${model.pricing.input.toFixed(2)}</td>
-                          <td className="px-4 py-3">${model.pricing.output.toFixed(2)}</td>
-                          <td className="px-4 py-3">{model.contextWindowLabel}</td>
-                          <td className="px-4 py-3 text-white/60">{model.pricing.note ?? model.availabilityLabel}</td>
-                        </tr>
-                      ))}
-                    </tbody>
-                  </table>
+                  <Card className="border-white/10 bg-white/5 backdrop-blur-sm">
+                    <CardHeader>
+                      <CardTitle className="text-white">Quick Start</CardTitle>
+                      <CardDescription className="text-white/60">
+                        Analyze imagery in less than ten lines of code
+                      </CardDescription>
+                    </CardHeader>
+                    <CardContent>
+                      <div className="rounded-lg border border-white/10 bg-black/60 p-4 text-sm text-gray-200">
+                        <code>
+                          <div>import {"{ OculusAI }"} from "@oculus-ai/sdk";</div>
+                          <div className="mt-2">const client = new OculusAI({"{"}</div>
+                          <div>  apiKey: process.env.OCULUS_API_KEY,</div>
+                          <div>{`});`}</div>
+                          <div className="mt-2">const result = await client.analyze({"{"}</div>
+                          <div>  model: "oculus-1-0125",</div>
+                          <div>  image: imageUrl,</div>
+                          <div>  tasks: ["classification", "detection"],</div>
+                          <div>{`});`}</div>
+                        </code>
+                      </div>
+                    </CardContent>
+                  </Card>
                 </div>
-              </div>
+              </Section>
 
-              <div className="mt-12 grid gap-6 md:grid-cols-2">
+              <Section id="authentication" title="Authentication">
                 <Card className="border-white/10 bg-white/5 backdrop-blur-sm">
                   <CardHeader>
-                    <CardTitle className="text-white text-xl">Volume Discounts</CardTitle>
+                    <CardTitle className="text-white">API Keys</CardTitle>
+                    <CardDescription className="text-white/60">
+                      Secure your API access with bearer tokens and scoped roles
+                    </CardDescription>
+                  </CardHeader>
+                  <CardContent className="space-y-4 text-gray-200">
+                    <p>All API requests require an API key embedded in the <code className="rounded bg-white/10 px-1">Authorization</code> header.</p>
+                    <div className="rounded-lg border border-white/10 bg-black/60 p-4 text-sm">
+                      <code>Authorization: Bearer YOUR_API_KEY</code>
+                    </div>
+                    <div className="flex items-start gap-3">
+                      <Shield className="mt-1 h-5 w-5 text-white" />
+                      <div>
+                        <p className="font-semibold text-white">Rotate keys every 90 days</p>
+                        <p className="text-white/60">Use the console or the `/v1/keys` endpoint to rotate credentials without downtime.</p>
+                      </div>
+                    </div>
+                  </CardContent>
+                </Card>
+              </Section>
+
+              <Section id="models" title="Model Catalog">
+                <p className="mb-6 text-gray-300">
+                  Oculus AI ships <strong>{SORTED_MODELS.length}</strong> vision-focused models spanning foundation, pro, mini, specialized, and ultra families. Each model includes explicit pricing, performance, and rate-limit metadata for transparent planning.
+                </p>
+                <div className="grid gap-6 md:grid-cols-2">
+                  {SORTED_MODELS.slice(0, 6).map((model) => (
+                    <Card key={model.id} className="border-white/10 bg-white/5 backdrop-blur-sm">
+                      <CardHeader>
+                        <Badge className="mb-4 w-fit bg-white text-black">{model.badge}</Badge>
+                        <CardTitle className="text-white text-2xl">{model.name}</CardTitle>
+                        <CardDescription className="text-white/60">{model.description}</CardDescription>
+                      </CardHeader>
+                      <CardContent className="space-y-3 text-sm text-gray-200">
+                        <div className="flex items-center gap-2">
+                          <Gauge className="h-4 w-4 text-white/60" />
+                          <span>Accuracy: {model.performance.accuracy}</span>
+                        </div>
+                        <div className="flex items-center gap-2">
+                          <Clock className="h-4 w-4 text-white/60" />
+                          <span>Latency: {model.performance.latency}</span>
+                        </div>
+                        <div className="flex items-center gap-2">
+                          <Layers className="h-4 w-4 text-white/60" />
+                          <span>Context: {model.contextWindowLabel}</span>
+                        </div>
+                      </CardContent>
+                    </Card>
+                  ))}
+                </div>
+                <p className="mt-6 text-sm text-white/50">
+                  Explore the full catalog and download spec sheets via the <Link href="/models" className="text-white underline">models directory</Link>.
+                </p>
+              </Section>
+
+              <Section id="pricing" title="Pricing">
+                <p className="text-gray-300">
+                  Detailed pricing for every Oculus AI model, including per-token costs, bundled packages, volume discounts, and enterprise options. Pricing is transparent across all {SORTED_MODELS.length} models, including Openflowith's secret tier.
+                </p>
+
+                <div className="mt-8 grid gap-6 md:grid-cols-2">
+                  {PRICING_PACKAGES.map((tier) => (
+                    <Card key={tier.name} className="border-white/10 bg-white/5 backdrop-blur-sm">
+                      <CardHeader>
+                        <CardTitle className="text-white text-xl">{tier.name}</CardTitle>
+                        <CardDescription className="text-white/60">{tier.description}</CardDescription>
+                      </CardHeader>
+                      <CardContent className="space-y-4 text-sm text-gray-200">
+                        <div className="flex items-baseline gap-2 text-white">
+                          <span className="text-4xl font-semibold">{tier.price}</span>
+                          <span>{tier.period}</span>
+                        </div>
+                        <p className="text-white/50">{tier.tokens}</p>
+                        <ul className="space-y-2 text-white/80">
+                          {tier.includes.map((item) => (
+                            <li key={item} className="flex items-start gap-2">
+                              <Sparkles className="mt-0.5 h-4 w-4 text-white/50" />
+                              {item}
+                            </li>
+                          ))}
+                        </ul>
+                      </CardContent>
+                    </Card>
+                  ))}
+                </div>
+
+                <div className="mt-10 space-y-4">
+                  <h3 className="text-balance text-xl font-semibold sm:text-2xl">Per-model pricing (per 1K tokens)</h3>
+                  <div className="overflow-x-auto rounded-lg border border-white/10">
+                    <table className="min-w-full divide-y divide-white/10 text-left text-sm text-white/80">
+                      <thead>
+                        <tr className="bg-white/5 text-white">
+                          <th className="px-4 py-3 font-medium">Model</th>
+                          <th className="px-4 py-3 font-medium">Tier</th>
+                          <th className="px-4 py-3 font-medium">Input</th>
+                          <th className="px-4 py-3 font-medium">Output</th>
+                          <th className="px-4 py-3 font-medium">Context</th>
+                          <th className="px-4 py-3 font-medium">Notes</th>
+                        </tr>
+                      </thead>
+                      <tbody className="divide-y divide-white/10">
+                        {SORTED_MODELS.map((model) => (
+                          <tr key={model.id} className="hover:bg-white/5">
+                            <td className="px-4 py-3 text-white">{model.name}</td>
+                            <td className="px-4 py-3 capitalize">{model.tier}</td>
+                            <td className="px-4 py-3">${model.pricing.input.toFixed(2)}</td>
+                            <td className="px-4 py-3">${model.pricing.output.toFixed(2)}</td>
+                            <td className="px-4 py-3">{model.contextWindowLabel}</td>
+                            <td className="px-4 py-3 text-white/60">{model.pricing.note ?? model.availabilityLabel}</td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                  </div>
+                </div>
+
+                <div className="mt-12 grid gap-6 md:grid-cols-2">
+                  <Card className="border-white/10 bg-white/5 backdrop-blur-sm">
+                    <CardHeader>
+                      <CardTitle className="text-white text-xl">Volume Discounts</CardTitle>
                     <CardDescription className="text-white/60">
                       Automatic & negotiated discounts for sustained usage
                     </CardDescription>
@@ -1161,9 +1220,10 @@ export default function Documentation() {
               </Card>
             </Section>
           </div>
+          </div>
         </div>
       </div>
-    </div>
+    </Fragment>
   );
 }
 

@@ -97,11 +97,11 @@ export default function RegisterPage() {
       <SiteHeader />
       <div className="site-shell relative min-h-screen bg-black text-white overflow-hidden">
         <div className="absolute inset-0 -z-10">
-          <div className="absolute -top-24 -left-20 h-72 w-72 rounded-full bg-white/10 blur-3xl" />
-          <div className="absolute bottom-0 right-10 h-96 w-96 rounded-full bg-white/10 blur-3xl" />
+          <div className="absolute left-1/2 top-0 h-48 w-48 -translate-x-1/2 rounded-full bg-white/10 blur-3xl sm:-left-20 sm:h-56 sm:w-56 sm:translate-x-0 lg:h-72 lg:w-72" />
+          <div className="absolute bottom-0 right-1/2 h-56 w-56 translate-x-1/2 rounded-full bg-white/10 blur-3xl sm:right-10 sm:h-72 sm:w-72 sm:translate-x-0 lg:h-96 lg:w-96" />
         </div>
 
-        <div className="mx-auto flex min-h-screen max-w-5xl flex-col items-center justify-center px-4 py-24">
+        <div className="mx-auto flex min-h-screen max-w-5xl flex-col items-center justify-center px-4 py-16 sm:py-24">
           <motion.div
             initial={{ opacity: 0, y: 24 }}
             animate={{ opacity: 1, y: 0 }}
@@ -112,10 +112,10 @@ export default function RegisterPage() {
               <ShieldCheck className="h-4 w-4" />
               Secure Onboarding
             </div>
-            <h1 className="mt-8 text-4xl font-semibold tracking-tight sm:text-5xl">
+            <h1 className="mt-8 text-3xl font-semibold tracking-tight text-balance sm:text-4xl md:text-5xl">
               Register for Oculus AI Access
             </h1>
-            <p className="mt-4 max-w-xl text-balance text-sm text-white/60 sm:text-base">
+            <p className="mx-auto mt-4 max-w-xl text-balance text-sm text-white/60 sm:text-base">
               Create your account to unlock enterprise-grade computer vision models with precision analytics, real-time streaming, and seamless deployment across your infrastructure.
             </p>
           </motion.div>

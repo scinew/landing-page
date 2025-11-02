@@ -36,7 +36,7 @@ export default function OpenflowithPage() {
       <div className="site-shell relative min-h-screen overflow-hidden bg-black text-white">
         <div className="pointer-events-none absolute inset-0 -z-10">
           <div className="absolute inset-0 bg-[radial-gradient(circle_at_top,rgba(255,255,255,0.15),transparent_55%)]" />
-          <div className="absolute bottom-0 left-1/2 h-[40rem] w-[40rem] -translate-x-1/2 rounded-full bg-white/10 blur-[180px]" />
+          <div className="absolute bottom-0 left-1/2 h-64 w-64 -translate-x-1/2 rounded-full bg-white/10 blur-[120px] sm:h-96 sm:w-96 sm:blur-[150px] lg:h-[40rem] lg:w-[40rem] lg:blur-[180px]" />
         </div>
 
         <motion.div
@@ -46,16 +46,16 @@ export default function OpenflowithPage() {
           className="relative mx-auto flex max-w-6xl flex-col gap-16 px-4 pb-24 pt-24 sm:px-6 lg:px-8"
         >
           <div className="flex flex-col gap-4 text-center">
-            <div className="flex items-center justify-center gap-3">
+            <div className="flex flex-wrap items-center justify-center gap-3">
               <Badge className="bg-white text-black">Classified Access</Badge>
               <Badge variant="outline" className="border-white/20 bg-white/10 text-white/80">
                 {MODEL.badge}
               </Badge>
             </div>
-            <h1 className="text-4xl font-semibold tracking-tight sm:text-5xl lg:text-6xl">
+            <h1 className="text-3xl font-semibold tracking-tight text-balance sm:text-5xl lg:text-6xl">
               Openflowith Vault
             </h1>
-            <p className="mx-auto max-w-2xl text-balance text-white/70">
+            <p className="mx-auto max-w-2xl text-balance text-sm text-white/70 sm:text-base">
               Beneath the Oculus portfolio lies an invitation-only intelligence artifact. Openflowith operates beyond
               conventional context limits, orchestrating temporal reasoning threads with a <span className="font-semibold text-white">{MODEL.contextWindowLabel}</span> memory lattice and <span className="font-semibold text-white">{MODEL.performance.accuracy}</span> precision envelope.
             </p>
