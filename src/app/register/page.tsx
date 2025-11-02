@@ -95,7 +95,7 @@ export default function RegisterPage() {
   return (
     <>
       <SiteHeader />
-      <div className="relative min-h-screen bg-black text-white overflow-hidden pt-16">
+      <div className="site-shell relative min-h-screen bg-black text-white overflow-hidden">
         <div className="absolute inset-0 -z-10">
           <div className="absolute -top-24 -left-20 h-72 w-72 rounded-full bg-white/10 blur-3xl" />
           <div className="absolute bottom-0 right-10 h-96 w-96 rounded-full bg-white/10 blur-3xl" />

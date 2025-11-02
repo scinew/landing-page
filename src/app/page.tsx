@@ -123,7 +123,7 @@ export default function Home() {
     <>
       <SiteHeader />
       <InteractiveBackground />
-      <div ref={containerRef} className="relative min-h-screen bg-black text-white overflow-hidden pt-16">
+      <div ref={containerRef} className="site-shell relative min-h-screen bg-black text-white overflow-hidden">
         <motion.section
           className="relative min-h-screen flex items-center justify-center px-4 sm:px-6 lg:px-8"
           style={{ opacity, scale }}
