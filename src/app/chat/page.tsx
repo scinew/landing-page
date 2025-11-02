@@ -2,12 +2,26 @@
 
 import { FormEvent, useEffect, useMemo, useRef, useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { Bot, Loader2, Lock, Send, Sparkles, User } from "lucide-react";
+import {
+  Bot,
+  Loader2,
+  Lock,
+  Send,
+  Sparkles,
+  User,
+  Plus,
+  Menu,
+  X,
+  MessageSquare,
+  Settings,
+  ChevronLeft,
+  Eye,
+} from "lucide-react";
+import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { SiteHeader } from "@/components/site-header";
 import {
   PUBLIC_MODELS,
   SECRET_MODEL,
@@ -21,6 +35,15 @@ interface ChatMessage {
   role: "user" | "assistant";
   content: string;
   timestamp: string;
+}
+
+interface Conversation {
+  id: string;
+  title: string;
+  messages: ChatMessage[];
+  createdAt: Date;
+  updatedAt: Date;
+  model: string;
 }
 
 interface ModelOption {
@@ -102,31 +125,113 @@ const SERIES_RESPONSES: Record<ModelSeries | "secret", string> = {
     "Openflowith channels initiated. Temporal reasoning threads and quantum-safe heuristics are in effect—handle with care.",
 };
 
+const formatTime = (timestamp: string) => timestamp;
+const ellipsize = (text: string, length = 48) => (text.length > length ? `${text.slice(0, length)}…` : text);
+
 export default function ChatPage() {
-  const [model, setModel] = useState<string>(DEFAULT_MODEL.id);
+  const createAssistantGreeting = (modelRecord: OculusModel) =>
+    `You're speaking with ${modelRecord.name}. Ask about detection strategies, performance tuning, or deployment orchestration.`;
+
+  const createConversation = (modelRecord: OculusModel): Conversation => {
+    const timestamp = new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" });
+    return {
+      id: crypto.randomUUID(),
+      title: "New Conversation",
+      messages: [
+        {
+          id: crypto.randomUUID(),
+          role: "assistant",
+          content: createAssistantGreeting(modelRecord),
+          timestamp,
+        },
+      ],
+      createdAt: new Date(),
+      updatedAt: new Date(),
+      model: modelRecord.id,
+    };
+  };
+
+  const initialConversationRef = useRef<Conversation | null>(null);
+
+  const [sidebarOpen, setSidebarOpen] = useState(false);
   const [secretUnlocked, setSecretUnlocked] = useState(false);
   const [unlockProgress, setUnlockProgress] = useState(0);
-  const [messages, setMessages] = useState<ChatMessage[]>(() => [
-    {
-      id: "welcome",
-      role: "assistant",
-      content: `I'm ${DEFAULT_MODEL.name}—ask about detection strategies, performance tuning, or integration tips.`,
-      timestamp: new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" }),
-    },
-  ]);
+  const [settingsOpen, setSettingsOpen] = useState(false);
+  const [conversations, setConversations] = useState<Conversation[]>(() => {
+    if (!initialConversationRef.current) {
+      initialConversationRef.current = createConversation(DEFAULT_MODEL);
+    }
+    return [initialConversationRef.current];
+  });
+  const [activeConversationId, setActiveConversationId] = useState<string>(() => initialConversationRef.current?.id ?? "");
+  const [model, setModel] = useState<string>(DEFAULT_MODEL.id);
   const [input, setInput] = useState("");
   const [isStreaming, setIsStreaming] = useState(false);
   const containerRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
+    if (typeof window === "undefined") return;
+    const media = window.matchMedia("(min-width: 1024px)");
+    setSidebarOpen(media.matches);
+  }, []);
+
+  useEffect(() => {
     const urlParams = new URLSearchParams(window.location.search);
     const modelParam = urlParams.get("model");
+    if (!modelParam) return;
+
     if (modelParam === SECRET_MODEL.id || modelParam === "openflowith") {
       setSecretUnlocked(true);
       setUnlockProgress(3);
       setModel(SECRET_MODEL.id);
-    } else if (modelParam) {
-      setModel(modelParam);
+      setConversations((prev) =>
+        prev.map((conversation, index) =>
+          index === 0
+            ? {
+                ...conversation,
+                model: SECRET_MODEL.id,
+                messages:
+                  conversation.messages.length === 1 && conversation.messages[0].role === "assistant"
+                    ? [
+                        {
+                          ...conversation.messages[0],
+                          content: createAssistantGreeting(SECRET_MODEL),
+                          timestamp: new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" }),
+                        },
+                      ]
+                    : conversation.messages,
+                updatedAt: new Date(),
+              }
+            : conversation,
+        ),
+      );
+      setActiveConversationId((prev) => prev || (initialConversationRef.current?.id ?? ""));
+    } else {
+      const targetModel = PUBLIC_MODELS.find((item) => item.id === modelParam);
+      if (!targetModel) return;
+      setModel(targetModel.id);
+      setConversations((prev) =>
+        prev.map((conversation, index) =>
+          index === 0
+            ? {
+                ...conversation,
+                model: targetModel.id,
+                messages:
+                  conversation.messages.length === 1 && conversation.messages[0].role === "assistant"
+                    ? [
+                        {
+                          ...conversation.messages[0],
+                          content: createAssistantGreeting(targetModel),
+                          timestamp: new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" }),
+                        },
+                      ]
+                    : conversation.messages,
+                updatedAt: new Date(),
+              }
+            : conversation,
+        ),
+      );
+      setActiveConversationId((prev) => prev || (initialConversationRef.current?.id ?? ""));
     }
   }, []);
 
@@ -166,10 +271,27 @@ export default function ChatPage() {
     [secretUnlocked],
   );
 
-  const activeModel = useMemo<OculusModel | undefined>(
-    () => selectableModels.find((item) => item.id === model) ?? selectableModels[0],
-    [model, selectableModels],
+  const modelMap = useMemo(() => {
+    const map = new Map<string, OculusModel>();
+    selectableModels.forEach((item) => map.set(item.id, item));
+    map.set(SECRET_MODEL.id, SECRET_MODEL);
+    return map;
+  }, [selectableModels]);
+
+  const activeConversation = useMemo(
+    () => conversations.find((conversation) => conversation.id === activeConversationId) ?? null,
+    [conversations, activeConversationId],
   );
+
+  const activeModel = activeConversation ? modelMap.get(activeConversation.model) ?? modelMap.get(model) : modelMap.get(model);
+  const messages = activeConversation?.messages ?? [];
+
+  useEffect(() => {
+    if (!activeConversation) return;
+    if (activeConversation.model !== model) {
+      setModel(activeConversation.model);
+    }
+  }, [activeConversation?.model]);
 
   const contextHints = useMemo(() => {
     if (!activeModel) return [];
@@ -191,18 +313,70 @@ export default function ChatPage() {
     });
   };
 
+  const handleNewChat = () => {
+    const referencedModel = activeModel ?? DEFAULT_MODEL;
+    const newConversation = createConversation(referencedModel);
+    setConversations((prev) => [newConversation, ...prev]);
+    setActiveConversationId(newConversation.id);
+    setModel(referencedModel.id);
+    if (window.innerWidth < 1024) {
+      setSidebarOpen(false);
+    }
+  };
+
+  const handleConversationSelect = (conversation: Conversation) => {
+    setActiveConversationId(conversation.id);
+    setModel(conversation.model);
+    if (window.innerWidth < 1024) {
+      setSidebarOpen(false);
+    }
+  };
+
+  const handleModelSelection = (value: string) => {
+    setModel(value);
+    setConversations((prev) =>
+      prev.map((conversation) =>
+        conversation.id === activeConversationId
+          ? {
+              ...conversation,
+              model: value,
+            }
+          : conversation,
+      ),
+    );
+  };
+
   const handleSubmit = (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
-    if (!input.trim() || !activeModel) return;
+    if (!input.trim() || !activeConversation || !activeModel) return;
 
+    const timestamp = new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" });
     const userMessage: ChatMessage = {
       id: crypto.randomUUID(),
       role: "user",
       content: input.trim(),
-      timestamp: new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" }),
+      timestamp,
     };
 
-    setMessages((prev) => [...prev, userMessage]);
+    const previewTitle = ellipsize(input.trim(), 48);
+
+    setConversations((prev) => {
+      const updated = prev.map((conversation) =>
+        conversation.id === activeConversationId
+          ? {
+              ...conversation,
+              messages: [...conversation.messages, userMessage],
+              title:
+                conversation.messages.length === 1 && conversation.messages[0].role === "assistant"
+                  ? previewTitle
+                  : conversation.title,
+              updatedAt: new Date(),
+            }
+          : conversation,
+      );
+      return updated;
+    });
+
     setInput("");
     setIsStreaming(true);
 
@@ -214,7 +388,19 @@ export default function ChatPage() {
         content: assistantsThoughts,
         timestamp: new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" }),
       };
-      setMessages((prev) => [...prev, assistantMessage]);
+      setConversations((prev) =>
+        prev
+          .map((conversation) =>
+            conversation.id === activeConversationId
+              ? {
+                  ...conversation,
+                  messages: [...conversation.messages, assistantMessage],
+                  updatedAt: new Date(),
+                }
+              : conversation,
+          )
+          .sort((a, b) => b.updatedAt.getTime() - a.updatedAt.getTime()),
+      );
       setIsStreaming(false);
 
       requestAnimationFrame(() => {
@@ -226,253 +412,367 @@ export default function ChatPage() {
   };
 
   return (
-    <>
-      <SiteHeader />
-      <div className="relative min-h-screen bg-black text-white overflow-hidden pt-16">
-        <div className="absolute inset-0 -z-10">
-          <div className="absolute top-20 left-1/4 h-80 w-80 rounded-full bg-white/5 blur-3xl" />
-          <div className="absolute bottom-20 right-1/3 h-96 w-96 rounded-full bg-white/10 blur-3xl" />
-        </div>
-
-        <div className="mx-auto flex min-h-screen max-w-6xl flex-col px-4 py-16 sm:px-6 lg:px-8">
-          <motion.div
-            initial={{ opacity: 0, y: 24 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.6 }}
-            className="mb-10 text-center"
+    <div className="relative flex min-h-screen bg-black text-white">
+      <AnimatePresence>{sidebarOpen && <SidebarOverlay onDismiss={() => setSidebarOpen(false)} />}</AnimatePresence>
+      <AnimatePresence>
+        {sidebarOpen && (
+          <motion.aside
+            initial={{ x: -320 }}
+            animate={{ x: 0 }}
+            exit={{ x: -320 }}
+            transition={{ type: "spring", damping: 26, stiffness: 220 }}
+            className="fixed inset-y-0 left-0 z-50 flex w-80 flex-col border-r border-white/10 bg-black/95 backdrop-blur-xl"
           >
-            <div className="inline-flex items-center gap-3 rounded-full border border-white/10 bg-white/5 px-5 py-2 text-xs uppercase tracking-[0.35em] text-white/60">
-              <Sparkles className="h-4 w-4" />
-              Interactive Console
+            <div className="flex items-center justify-between border-b border-white/10 p-4">
+              <Link href="/" className="flex items-center gap-2 font-mono text-sm uppercase tracking-[0.3em] text-white/80">
+                <Eye className="h-5 w-5" />
+                Oculus AI
+              </Link>
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={() => setSidebarOpen(false)}
+                className="text-white/60 hover:bg-white/10 hover:text-white"
+              >
+                <X className="h-5 w-5" />
+              </Button>
             </div>
-            <h1 className="mt-8 text-4xl font-semibold tracking-tight sm:text-5xl">
-              Chat with Oculus AI
-            </h1>
-            <p className="mt-4 max-w-2xl mx-auto text-balance text-sm text-white/60 sm:text-base">
-              Prototype conversations with our latest vision models, simulate reasoning sequences, and get ready-to-ship
-              integration guidance in real time.
-            </p>
-          </motion.div>
 
-          <div className="grid gap-6 lg:grid-cols-[320px,1fr]">
-            <motion.div
-              initial={{ opacity: 0, y: 24 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.6, delay: 0.1 }}
-            >
-              <Card className="border-white/10 bg-white/5 backdrop-blur-lg">
-                <CardHeader>
-                  <CardTitle className="text-white">Session Settings</CardTitle>
-                  <CardDescription className="text-white/60">
-                    Configure which model powers this conversation
-                  </CardDescription>
-                </CardHeader>
-                <CardContent className="space-y-6">
-                  <div className="space-y-2">
-                    <Label htmlFor="model">Model</Label>
-                    <div className="relative">
-                      <select
-                        id="model"
-                        value={model}
-                        onChange={(event) => setModel(event.target.value)}
-                        className="flex h-10 w-full appearance-none rounded-md border border-white/10 bg-black/40 px-3 text-sm text-white focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-white/40"
-                      >
-                        {groupedOptions.map((group) => (
-                          <optgroup key={group.displaySeries} label={`${group.displaySeries} Series`}>
-                            {group.options.map((option) => (
-                              <option key={option.value} value={option.value} className="bg-black text-white">
-                                {option.label}
-                              </option>
-                            ))}
-                          </optgroup>
-                        ))}
-                      </select>
-                      <span className="pointer-events-none absolute inset-y-0 right-3 flex items-center text-white/40">▾</span>
-                    </div>
-                    {activeModel ? (
-                      <div className="grid grid-cols-2 gap-3 rounded-lg border border-white/10 bg-black/30 p-4 text-xs text-white/60">
-                        <div>
-                          <p className="uppercase tracking-wide">Context</p>
-                          <p className="mt-1 text-sm font-semibold text-white">{activeModel.contextWindowLabel}</p>
-                        </div>
-                        <div>
-                          <p className="uppercase tracking-wide">Availability</p>
-                          <p className="mt-1 text-sm font-semibold text-white">{activeModel.availabilityLabel}</p>
-                        </div>
-                        <div>
-                          <p className="uppercase tracking-wide">Pricing</p>
-                          <p className="mt-1 text-sm font-semibold text-white">
-                            ${activeModel.pricing.input.toFixed(2)} / ${activeModel.pricing.output.toFixed(2)}
-                          </p>
-                        </div>
-                        <div>
-                          <p className="uppercase tracking-wide">Series</p>
-                          <p className="mt-1 text-sm font-semibold text-white">{SERIES_LABELS[activeModel.series]}</p>
-                        </div>
-                      </div>
-                    ) : null}
-                  </div>
+            <div className="p-4">
+              <Button
+                onClick={handleNewChat}
+                className="flex w-full items-center justify-center gap-2 bg-white text-black hover:bg-gray-200"
+              >
+                <Plus className="h-4 w-4" />
+                New Chat
+              </Button>
+            </div>
 
-                  <div className="space-y-2">
+            <div className="flex-1 space-y-2 overflow-y-auto p-4">
+              <div className="text-xs font-semibold uppercase tracking-wider text-white/40">History</div>
+              <div className="mt-3 space-y-2">
+                {conversations.map((conversation) => {
+                  const lastMessage = conversation.messages[conversation.messages.length - 1];
+                  const conversationModel = modelMap.get(conversation.model);
+                  const isActive = conversation.id === activeConversationId;
+                  return (
                     <button
-                      type="button"
-                      onClick={handleSecretUnlock}
-                      className={`flex w-full items-center justify-between rounded-md border px-3 py-2 text-xs transition ${
-                        secretUnlocked
-                          ? "border-purple-300/60 bg-purple-500/10 text-purple-100"
-                          : "border-white/10 bg-white/5 text-white/70 hover:border-white/25 hover:bg-white/10"
+                      key={conversation.id}
+                      onClick={() => handleConversationSelect(conversation)}
+                      className={`w-full rounded-lg border p-3 text-left transition-all ${
+                        isActive
+                          ? "border-white/30 bg-white/10 text-white"
+                          : "border-white/5 bg-transparent text-white/70 hover:border-white/20 hover:bg-white/5 hover:text-white"
                       }`}
                     >
-                      <span className="flex items-center gap-2">
-                        <Lock className="h-3.5 w-3.5" />
-                        {secretUnlocked ? "Secret model unlocked" : "Tap thrice to unlock the secret model"}
-                      </span>
-                      {!secretUnlocked && <span>{Math.max(0, 3 - unlockProgress)} taps</span>}
-                    </button>
-                    {secretUnlocked ? (
-                      <p className="text-xs text-purple-200/80">
-                        Openflowith is now available in the selector and will be marked as a secret model.
-                      </p>
-                    ) : (
-                      <p className="text-xs text-white/50">
-                        Hint: watch the sparkles—three precise taps reveal an invitation-only pathway.
-                      </p>
-                    )}
-                  </div>
-
-                  <div className="rounded-lg border border-white/10 bg-white/5 p-4">
-                    <p className="text-xs font-semibold uppercase tracking-wider text-white/60">
-                      Hints
-                    </p>
-                    <ul className="mt-3 space-y-2 text-sm text-white/80">
-                      {contextHints.map((hint) => (
-                        <li key={hint} className="flex items-start gap-2">
-                          <Sparkles className="mt-0.5 h-4 w-4 flex-shrink-0 text-white/50" />
-                          {hint}
-                        </li>
-                      ))}
-                    </ul>
-                  </div>
-
-                  <div className="rounded-lg border border-white/10 bg-white/5 p-4 text-xs text-white/50">
-                    Responses are simulated for this demo. Integrate the streaming API to connect your own backend and
-                    persist session history.
-                  </div>
-                </CardContent>
-              </Card>
-            </motion.div>
-
-            <motion.div
-              initial={{ opacity: 0, y: 24 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.6, delay: 0.15 }}
-              className="flex flex-col"
-            >
-              <Card className="flex flex-1 flex-col border-white/10 bg-white/5 backdrop-blur-lg">
-                <CardHeader className="border-b border-white/10">
-                  <CardTitle className="flex items-center gap-3 text-white">
-                    <Bot className="h-6 w-6 text-white/70" />
-                    Oculus Conversation
-                  </CardTitle>
-                  <CardDescription className="text-white/60">
-                    Typing indicators, history timeline, and staged responses for rapid prototyping
-                  </CardDescription>
-                </CardHeader>
-                <CardContent className="flex flex-1 flex-col overflow-hidden p-0">
-                  <div ref={containerRef} className="flex-1 space-y-6 overflow-y-auto px-6 py-6">
-                    <AnimatePresence initial={false}>
-                      {messages.map((message) => (
-                        <motion.div
-                          key={message.id}
-                          layout
-                          initial={{ opacity: 0, y: 12 }}
-                          animate={{ opacity: 1, y: 0 }}
-                          exit={{ opacity: 0, y: -12 }}
-                          transition={{ duration: 0.3 }}
-                          className={`flex gap-4 ${message.role === "user" ? "flex-row-reverse" : "flex-row"}`}
-                        >
-                          <div
-                            className={`mt-1 flex h-9 w-9 items-center justify-center rounded-full border ${
-                              message.role === "user"
-                                ? "border-white/40 bg-white/20"
-                                : "border-white/10 bg-white/10"
-                            }`}
-                          >
-                            {message.role === "user" ? <User className="h-5 w-5" /> : <Bot className="h-5 w-5" />}
-                          </div>
-                          <div
-                            className={`max-w-xl rounded-2xl border px-4 py-3 text-sm leading-relaxed backdrop-blur ${
-                              message.role === "user"
-                                ? "border-white/20 bg-white/10 text-white"
-                                : "border-white/10 bg-black/40 text-white/90"
-                            }`}
-                          >
-                            <p>{message.content}</p>
-                            <span className="mt-3 block text-right text-[10px] uppercase tracking-widest text-white/40">
-                              {message.timestamp}
-                            </span>
-                          </div>
-                        </motion.div>
-                      ))}
-                    </AnimatePresence>
-                    {isStreaming ? (
-                      <motion.div
-                        className="flex items-center gap-3 text-sm text-white/60"
-                        initial={{ opacity: 0, y: 12 }}
-                        animate={{ opacity: 1, y: 0 }}
-                        exit={{ opacity: 0, y: -12 }}
-                      >
-                        <Loader2 className="h-4 w-4 animate-spin" />
-                        Oculus AI is crafting a response...
-                      </motion.div>
-                    ) : null}
-                  </div>
-
-                  <form onSubmit={handleSubmit} className="border-t border-white/10 p-4">
-                    <div className="flex items-end gap-3">
-                      <div className="flex-1 space-y-2">
-                        <Label htmlFor="message" className="text-white/60">
-                          Message
-                        </Label>
-                        <Input
-                          id="message"
-                          placeholder="Describe your dataset, ask for tuning strategies, or plan your deployment pipeline..."
-                          value={input}
-                          onChange={(event) => setInput(event.target.value)}
-                          className="bg-black/40 text-white border-white/10"
-                        />
+                      <div className="flex items-center justify-between gap-2">
+                        <div className="text-sm font-semibold truncate">{conversation.title}</div>
+                        <span className="text-[10px] uppercase tracking-wide text-white/40">
+                          {lastMessage ? formatTime(lastMessage.timestamp) : ""}
+                        </span>
                       </div>
-                      <Button
-                        type="submit"
-                        className="group flex h-12 w-12 items-center justify-center rounded-full bg-white text-black hover:bg-gray-200"
-                        disabled={isStreaming}
-                      >
-                        {isStreaming ? (
-                          <Loader2 className="h-4 w-4 animate-spin" />
-                        ) : (
-                          <Send className="h-4 w-4 transition-transform group-hover:-translate-y-1" />
-                        )}
-                      </Button>
-                    </div>
-                  </form>
-                </CardContent>
-              </Card>
-            </motion.div>
-          </div>
+                      <div className="mt-2 flex items-center gap-2 text-xs text-white/40">
+                        <MessageSquare className="h-3.5 w-3.5" />
+                        <span>{conversation.messages.length} messages</span>
+                        <span className="text-white/30">•</span>
+                        <span>{conversationModel?.name ?? "Model"}</span>
+                      </div>
+                    </button>
+                  );
+                })}
+              </div>
+            </div>
 
-          <motion.div
-            initial={{ opacity: 0, y: 24 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.6, delay: 0.2 }}
-            className="mt-8 grid gap-4 text-center text-xs text-white/40 sm:grid-cols-3"
-          >
-            <p>Streaming ready SDK integration</p>
-            <p>Persistent chat history via vision thread IDs</p>
-            <p>Model switch retains context window metadata</p>
-          </motion.div>
+            <div className="space-y-3 border-t border-white/10 p-4">
+              <button
+                type="button"
+                onClick={handleSecretUnlock}
+                className={`flex w-full items-center justify-between rounded-md border px-3 py-2 text-xs transition ${
+                  secretUnlocked
+                    ? "border-purple-300/60 bg-purple-500/10 text-purple-100"
+                    : "border-white/10 bg-white/5 text-white/70 hover:border-white/25 hover:bg-white/10"
+                }`}
+              >
+                <span className="flex items-center gap-2">
+                  <Lock className="h-3.5 w-3.5" />
+                  {secretUnlocked ? "Secret model unlocked" : "Tap thrice to unlock"}
+                </span>
+                {!secretUnlocked && <span>{Math.max(0, 3 - unlockProgress)} taps</span>}
+              </button>
+              <Button
+                variant="outline"
+                className="flex w-full items-center justify-center gap-2 border-white/10 bg-white/5 text-white hover:bg-white/10"
+                onClick={() => setSettingsOpen(true)}
+              >
+                <Settings className="h-4 w-4" />
+                Settings
+              </Button>
+              <Link href="/">
+                <Button
+                  variant="outline"
+                  className="flex w-full items-center justify-center gap-2 border-white/10 bg-white/5 text-white hover:bg-white/10"
+                >
+                  <ChevronLeft className="h-4 w-4" />
+                  Back to Home
+                </Button>
+              </Link>
+            </div>
+          </motion.aside>
+        )}
+      </AnimatePresence>
+
+      <div className={`flex min-h-screen flex-1 flex-col transition-all duration-300 ${sidebarOpen ? "md:ml-80" : "ml-0"}`}>
+        <header className="border-b border-white/10 bg-black/80 backdrop-blur-xl">
+          <div className="flex flex-wrap items-center justify-between gap-4 px-4 py-4">
+            <div className="flex items-center gap-3">
+              {!sidebarOpen && (
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={() => setSidebarOpen(true)}
+                  className="text-white/60 hover:bg-white/10 hover:text-white"
+                >
+                  <Menu className="h-5 w-5" />
+                </Button>
+              )}
+              <div>
+                <h1 className="text-lg font-semibold">{activeConversation?.title ?? "New Conversation"}</h1>
+                <p className="text-xs text-white/40">
+                  {activeModel?.name ?? "Oculus AI"} • {activeModel?.contextWindowLabel ?? "Context aware"}
+                </p>
+              </div>
+            </div>
+            <div className="flex flex-wrap items-center gap-3">
+              <div className="relative">
+                <select
+                  value={model}
+                  onChange={(event) => handleModelSelection(event.target.value)}
+                  className="flex h-10 min-w-[200px] appearance-none items-center rounded-md border border-white/10 bg-black/40 px-3 text-sm text-white focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-white/40"
+                >
+                  {groupedOptions.map((group) => (
+                    <optgroup key={group.displaySeries} label={`${group.displaySeries} Series`}>
+                      {group.options.map((option) => (
+                        <option key={option.value} value={option.value} className="bg-black text-white">
+                          {option.label}
+                        </option>
+                      ))}
+                    </optgroup>
+                  ))}
+                </select>
+                <span className="pointer-events-none absolute inset-y-0 right-3 flex items-center text-white/40">▾</span>
+              </div>
+              <Button
+                variant="outline"
+                onClick={handleNewChat}
+                className="flex items-center gap-2 border-white/20 bg-white/10 text-white hover:bg-white/20"
+              >
+                <Plus className="h-4 w-4" />
+                New Chat
+              </Button>
+              <Button
+                variant="outline"
+                onClick={() => setSettingsOpen(true)}
+                className="flex items-center gap-2 border-white/20 bg-white/10 text-white hover:bg-white/20"
+              >
+                <Settings className="h-4 w-4" />
+                Settings
+              </Button>
+              <div className="hidden text-xs text-white/40 md:block">{messages.length} messages</div>
+            </div>
+          </div>
+        </header>
+
+        <div ref={containerRef} className="flex-1 space-y-6 overflow-y-auto px-4 py-6">
+          <AnimatePresence initial={false}>
+            {messages.map((message) => (
+              <motion.div
+                key={message.id}
+                layout
+                initial={{ opacity: 0, y: 12 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: -12 }}
+                transition={{ duration: 0.3 }}
+                className={`mx-auto flex max-w-5xl gap-4 ${message.role === "user" ? "flex-row-reverse" : "flex-row"}`}
+              >
+                <div
+                  className={`mt-1 flex h-9 w-9 flex-shrink-0 items-center justify-center rounded-full border ${
+                    message.role === "user" ? "border-white/40 bg-white/20" : "border-white/10 bg-white/10"
+                  }`}
+                >
+                  {message.role === "user" ? <User className="h-5 w-5" /> : <Bot className="h-5 w-5" />}
+                </div>
+                <div
+                  className={`flex-1 rounded-2xl border px-4 py-3 text-sm leading-relaxed backdrop-blur ${
+                    message.role === "user"
+                      ? "border-white/20 bg-white/10 text-white"
+                      : "border-white/10 bg-black/40 text-white/90"
+                  }`}
+                >
+                  <p className="whitespace-pre-wrap">{message.content}</p>
+                  <span className="mt-3 block text-right text-[10px] uppercase tracking-widest text-white/35">
+                    {message.timestamp}
+                  </span>
+                </div>
+              </motion.div>
+            ))}
+          </AnimatePresence>
+          {isStreaming && (
+            <motion.div
+              className="mx-auto flex max-w-5xl items-center gap-3 text-sm text-white/60"
+              initial={{ opacity: 0, y: 12 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -12 }}
+            >
+              <div className="flex h-9 w-9 items-center justify-center rounded-full border border-white/10 bg-white/10">
+                <Bot className="h-5 w-5" />
+              </div>
+              <div className="flex items-center gap-2">
+                <Loader2 className="h-4 w-4 animate-spin" />
+                Oculus AI is crafting a response...
+              </div>
+            </motion.div>
+          )}
+        </div>
+
+        <div className="border-t border-white/10 bg-black/80 backdrop-blur-xl">
+          <div className="mx-auto max-w-5xl px-4 py-4">
+            <form onSubmit={handleSubmit} className="flex flex-col gap-3 md:flex-row md:items-end">
+              <div className="flex-1 space-y-2">
+                <div className="flex items-center gap-2 text-xs text-white/40">
+                  <Sparkles className="h-3 w-3" />
+                  <span>{activeModel?.name ?? "Oculus AI"}</span>
+                </div>
+                <Input
+                  placeholder="Ask about vision pipelines, integration tactics, or benchmarking insights..."
+                  value={input}
+                  onChange={(event) => setInput(event.target.value)}
+                  className="min-h-[3rem] border-white/10 bg-white/5 text-white focus-visible:ring-white/40"
+                  disabled={isStreaming}
+                />
+              </div>
+              <Button
+                type="submit"
+                className="group flex h-12 w-full items-center justify-center rounded-full bg-white text-black hover:bg-gray-200 md:w-12"
+                disabled={isStreaming || !input.trim()}
+              >
+                {isStreaming ? <Loader2 className="h-5 w-5 animate-spin" /> : <Send className="h-5 w-5 group-hover:-translate-y-1" />}
+              </Button>
+            </form>
+            <p className="mt-3 text-xs text-white/35">
+              Conversations refresh with each session. Connect your own backend to persist history and enable streaming responses.
+            </p>
+          </div>
         </div>
       </div>
-    </>
+
+      <AnimatePresence>
+        {settingsOpen && (
+          <motion.div
+            initial={{ x: 360 }}
+            animate={{ x: 0 }}
+            exit={{ x: 360 }}
+            transition={{ type: "spring", damping: 24, stiffness: 220 }}
+            className="fixed inset-y-0 right-0 z-50 w-full max-w-md border-l border-white/10 bg-black/95 backdrop-blur-xl"
+          >
+            <Card className="h-full border-0 bg-transparent shadow-none">
+              <CardHeader className="border-b border-white/10">
+                <div className="flex items-center justify-between">
+                  <CardTitle className="text-white">Settings</CardTitle>
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    onClick={() => setSettingsOpen(false)}
+                    className="text-white/60 hover:bg-white/10 hover:text-white"
+                  >
+                    <X className="h-5 w-5" />
+                  </Button>
+                </div>
+                <CardDescription className="text-white/60">
+                  Fine-tune your chat workspace
+                </CardDescription>
+              </CardHeader>
+              <CardContent className="space-y-6 pt-6">
+                <div className="space-y-2">
+                  <Label htmlFor="settings-model" className="text-white">
+                    Active model
+                  </Label>
+                  <div className="relative">
+                    <select
+                      id="settings-model"
+                      value={model}
+                      onChange={(event) => handleModelSelection(event.target.value)}
+                      className="flex h-10 w-full appearance-none rounded-md border border-white/10 bg-black/40 px-3 text-sm text-white focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-white/40"
+                    >
+                      {groupedOptions.map((group) => (
+                        <optgroup key={group.displaySeries} label={`${group.displaySeries} Series`}>
+                          {group.options.map((option) => (
+                            <option key={option.value} value={option.value} className="bg-black text-white">
+                              {option.label}
+                            </option>
+                          ))}
+                        </optgroup>
+                      ))}
+                    </select>
+                    <span className="pointer-events-none absolute inset-y-0 right-3 flex items-center text-white/40">▾</span>
+                  </div>
+                  {activeModel && (
+                    <div className="mt-3 grid grid-cols-2 gap-3 rounded-lg border border-white/10 bg-black/30 p-4 text-xs text-white/60">
+                      <div>
+                        <p className="uppercase tracking-wide">Context</p>
+                        <p className="mt-1 text-sm font-semibold text-white">{activeModel.contextWindowLabel}</p>
+                      </div>
+                      <div>
+                        <p className="uppercase tracking-wide">Availability</p>
+                        <p className="mt-1 text-sm font-semibold text-white">{activeModel.availabilityLabel}</p>
+                      </div>
+                      <div>
+                        <p className="uppercase tracking-wide">Pricing</p>
+                        <p className="mt-1 text-sm font-semibold text-white">
+                          ${activeModel.pricing.input.toFixed(2)} / ${activeModel.pricing.output.toFixed(2)}
+                        </p>
+                      </div>
+                      <div>
+                        <p className="uppercase tracking-wide">Accuracy</p>
+                        <p className="mt-1 text-sm font-semibold text-white">{activeModel.performance.accuracy}</p>
+                      </div>
+                    </div>
+                  )}
+                </div>
+
+                <div className="rounded-lg border border-white/10 bg-white/5 p-4">
+                  <p className="text-xs font-semibold uppercase tracking-wider text-white/60">Context hints</p>
+                  <ul className="mt-3 space-y-2 text-sm text-white/80">
+                    {contextHints.map((hint) => (
+                      <li key={hint} className="flex items-start gap-2">
+                        <Sparkles className="mt-0.5 h-4 w-4 flex-shrink-0 text-white/50" />
+                        {hint}
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+
+                <div className="rounded-lg border border-white/10 bg-white/5 p-4 text-xs text-white/50">
+                  Responses are simulated for this demo. Integrate the streaming API to connect your backend, persist threads, and enable multi-participant conversations.
+                </div>
+              </CardContent>
+            </Card>
+          </motion.div>
+        )}
+      </AnimatePresence>
+    </div>
+  );
+}
+
+function SidebarOverlay({ onDismiss }: { onDismiss: () => void }) {
+  return (
+    <motion.div
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 0.5 }}
+      exit={{ opacity: 0 }}
+      transition={{ duration: 0.2 }}
+      className="fixed inset-0 z-40 bg-black md:hidden"
+      onClick={onDismiss}
+    />
   );
 }
 
