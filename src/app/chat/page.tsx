@@ -16,6 +16,9 @@ import {
   Settings,
   ChevronLeft,
   Eye,
+  Search,
+  Brain,
+  MessagesSquare,
 } from "lucide-react";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
@@ -31,11 +34,26 @@ import {
 } from "@/lib/models";
 import { formatTimestamp } from "@/lib/utils";
 
+type ChatMode = "conversation" | "search" | "deepthink";
+
 interface ChatMessage {
   id: string;
   role: "user" | "assistant";
   content: string;
   timestamp: number;
+  mode?: ChatMode;
+}
+
+interface SearchResult {
+  conversationId: string;
+  conversationTitle: string;
+  messageId: string;
+  before: string;
+  match: string;
+  after: string;
+  timestamp: number;
+  prefixEllipsis: boolean;
+  suffixEllipsis: boolean;
 }
 
 interface Conversation {
@@ -174,6 +192,8 @@ export default function ChatPage() {
   const [model, setModel] = useState<string>(DEFAULT_MODEL.id);
   const [input, setInput] = useState("");
   const [isStreaming, setIsStreaming] = useState(false);
+  const [chatMode, setChatMode] = useState<ChatMode>("conversation");
+  const [searchResults, setSearchResults] = useState<SearchResult[]>([]);
   const containerRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -318,12 +338,31 @@ export default function ChatPage() {
 
   const contextHints = useMemo(() => {
     if (!activeModel) return [];
+    
+    if (chatMode === "search") {
+      return [
+        "Search across all conversations and messages",
+        "Use specific keywords for better results",
+        "Results are ordered by recency",
+        "Switch back to Conversation mode to continue chatting",
+      ];
+    }
+
+    if (chatMode === "deepthink") {
+      return [
+        "Extended reasoning with structured analysis",
+        "Expect detailed breakdowns and key takeaways",
+        "Responses may take longer to generate",
+        "Best for complex problems requiring deep analysis",
+      ];
+    }
+
     const hints = SERIES_HINTS[activeModel.series] ?? SERIES_HINTS.foundation;
     return [
       `Target context budget: ${activeModel.contextWindowLabel}`,
       ...hints,
     ];
-  }, [activeModel]);
+  }, [activeModel, chatMode]);
 
   const handleSecretUnlock = () => {
     if (secretUnlocked) return;
@@ -369,9 +408,51 @@ export default function ChatPage() {
     );
   };
 
+  const performSearch = (query: string) => {
+    const results: SearchResult[] = [];
+    const lowerQuery = query.toLowerCase();
+
+    conversations.forEach((conversation) => {
+      conversation.messages.forEach((message) => {
+        const lowerContent = message.content.toLowerCase();
+        const matchIndex = lowerContent.indexOf(lowerQuery);
+
+        if (matchIndex >= 0) {
+          const beforeStart = Math.max(0, matchIndex - 60);
+          const afterEnd = Math.min(message.content.length, matchIndex + query.length + 60);
+          const before = message.content.slice(beforeStart, matchIndex);
+          const match = message.content.slice(matchIndex, matchIndex + query.length);
+          const after = message.content.slice(matchIndex + query.length, afterEnd);
+
+          results.push({
+            conversationId: conversation.id,
+            conversationTitle: conversation.title,
+            messageId: message.id,
+            before: before.trimStart(),
+            match,
+            after: after.trimEnd(),
+            timestamp: message.timestamp,
+            prefixEllipsis: beforeStart > 0,
+            suffixEllipsis: afterEnd < message.content.length,
+          });
+        }
+      });
+    });
+
+    setSearchResults(results.sort((a, b) => b.timestamp - a.timestamp));
+  };
+
   const handleSubmit = (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
-    if (!input.trim() || !activeConversation || !activeModel) return;
+    if (!input.trim()) return;
+
+    // Handle search mode
+    if (chatMode === "search") {
+      performSearch(input.trim());
+      return;
+    }
+
+    if (!activeConversation || !activeModel) return;
 
     const timestamp = Date.now();
     const userMessage: ChatMessage = {
@@ -379,6 +460,7 @@ export default function ChatPage() {
       role: "user",
       content: input.trim(),
       timestamp,
+      mode: chatMode,
     };
 
     const previewTitle = ellipsize(input.trim(), 48);
@@ -403,13 +485,16 @@ export default function ChatPage() {
     setInput("");
     setIsStreaming(true);
 
+    const latency = chatMode === "deepthink" ? 2000 : 900;
+
     setTimeout(() => {
-      const assistantsThoughts = generateAssistantReply(userMessage.content, activeModel);
+      const assistantsThoughts = generateAssistantReply(userMessage.content, activeModel, chatMode);
       const assistantMessage: ChatMessage = {
         id: crypto.randomUUID(),
         role: "assistant",
         content: assistantsThoughts,
         timestamp: Date.now(),
+        mode: chatMode,
       };
       setConversations((prev) =>
         prev
@@ -431,7 +516,7 @@ export default function ChatPage() {
           containerRef.current.scrollTo({ top: containerRef.current.scrollHeight, behavior: "smooth" });
         }
       });
-    }, 900);
+    }, latency);
   };
 
   return (
@@ -454,6 +539,7 @@ export default function ChatPage() {
               <Button
                 variant="ghost"
                 size="sm"
+                aria-label="Close sidebar"
                 onClick={() => setSidebarOpen(false)}
                 className="text-white/60 hover:bg-white/10 hover:text-white"
               >
@@ -552,6 +638,7 @@ export default function ChatPage() {
                 <Button
                   variant="ghost"
                   size="sm"
+                  aria-label="Open sidebar"
                   onClick={() => setSidebarOpen(true)}
                   className="text-white/60 hover:bg-white/10 hover:text-white"
                 >
@@ -603,43 +690,179 @@ export default function ChatPage() {
               <div className="hidden text-xs text-white/40 md:block">{messages.length} messages</div>
             </div>
           </div>
+          <div className="border-t border-white/10 px-4 py-3">
+            <div className="mx-auto flex max-w-5xl items-center gap-2">
+              <span className="text-xs text-white/50">Mode:</span>
+              <div className="inline-flex rounded-lg border border-white/10 bg-white/5 p-1">
+                <button
+                  type="button"
+                  aria-pressed={chatMode === "conversation"}
+                  onClick={() => {
+                    setChatMode("conversation");
+                    setSearchResults([]);
+                  }}
+                  className={`flex items-center gap-1.5 rounded-md px-3 py-1.5 text-xs font-medium transition-all ${
+                    chatMode === "conversation"
+                      ? "bg-white text-black shadow-sm"
+                      : "text-white/70 hover:text-white hover:bg-white/10"
+                  }`}
+                >
+                  <MessagesSquare className="h-3.5 w-3.5" />
+                  <span className="hidden sm:inline">Conversation</span>
+                </button>
+                <button
+                  type="button"
+                  aria-pressed={chatMode === "search"}
+                  onClick={() => {
+                    setChatMode("search");
+                  }}
+                  className={`flex items-center gap-1.5 rounded-md px-3 py-1.5 text-xs font-medium transition-all ${
+                    chatMode === "search"
+                      ? "bg-white text-black shadow-sm"
+                      : "text-white/70 hover:text-white hover:bg-white/10"
+                  }`}
+                >
+                  <Search className="h-3.5 w-3.5" />
+                  <span className="hidden sm:inline">Search</span>
+                </button>
+                <button
+                  type="button"
+                  aria-pressed={chatMode === "deepthink"}
+                  onClick={() => {
+                    setChatMode("deepthink");
+                    setSearchResults([]);
+                  }}
+                  className={`flex items-center gap-1.5 rounded-md px-3 py-1.5 text-xs font-medium transition-all ${
+                    chatMode === "deepthink"
+                      ? "bg-white text-black shadow-sm"
+                      : "text-white/70 hover:text-white hover:bg-white/10"
+                  }`}
+                >
+                  <Brain className="h-3.5 w-3.5" />
+                  <span className="hidden sm:inline">Deepthink</span>
+                </button>
+              </div>
+            </div>
+          </div>
         </header>
 
         <div ref={containerRef} className="flex-1 space-y-6 overflow-y-auto px-4 py-6">
-          <AnimatePresence initial={false}>
-            {messages.map((message) => (
-              <motion.div
-                key={message.id}
-                layout
-                initial={{ opacity: 0, y: 12 }}
-                animate={{ opacity: 1, y: 0 }}
-                exit={{ opacity: 0, y: -12 }}
-                transition={{ duration: 0.3 }}
-                className={`mx-auto flex max-w-5xl gap-4 ${message.role === "user" ? "flex-row-reverse" : "flex-row"}`}
-              >
-                <div
-                  className={`mt-1 flex h-9 w-9 flex-shrink-0 items-center justify-center rounded-full border ${
-                    message.role === "user" ? "border-white/40 bg-white/20" : "border-white/10 bg-white/10"
-                  }`}
+          {chatMode === "search" && searchResults.length > 0 && (
+            <div className="mx-auto max-w-5xl space-y-4">
+              <div className="flex items-center justify-between">
+                <h2 className="text-sm font-semibold text-white">
+                  Found {searchResults.length} {searchResults.length === 1 ? "result" : "results"}
+                </h2>
+                <Button
+                  type="button"
+                  variant="ghost"
+                  size="sm"
+                  onClick={() => {
+                    setSearchResults([]);
+                    setInput("");
+                  }}
+                  className="text-white/60 hover:bg-white/10 hover:text-white"
                 >
-                  {message.role === "user" ? <User className="h-5 w-5" /> : <Bot className="h-5 w-5" />}
-                </div>
-                <div
-                  className={`flex-1 rounded-2xl border px-4 py-3 text-sm leading-relaxed backdrop-blur ${
-                    message.role === "user"
-                      ? "border-white/20 bg-white/10 text-white"
-                      : "border-white/10 bg-black/40 text-white/90"
-                  }`}
+                  Clear
+                </Button>
+              </div>
+              {searchResults.map((result) => (
+                <motion.div
+                  key={result.messageId}
+                  initial={{ opacity: 0, y: 12 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  className="rounded-xl border border-white/10 bg-white/5 p-4 backdrop-blur"
                 >
-                  <p className="whitespace-pre-wrap">{message.content}</p>
-                  <span className="mt-3 block text-right text-[10px] uppercase tracking-widest text-white/35">
-                    {formatTimestamp(message.timestamp)}
-                  </span>
-                </div>
-              </motion.div>
-            ))}
-          </AnimatePresence>
-          {isStreaming && (
+                  <div className="mb-2 flex items-center justify-between text-xs">
+                    <span className="font-medium text-white/70">{result.conversationTitle}</span>
+                    <span className="text-white/40">{formatTimestamp(result.timestamp)}</span>
+                  </div>
+                  <p className="text-sm leading-relaxed text-white/80">
+                    {result.prefixEllipsis && <span className="text-white/40">...</span>}
+                    {result.before}
+                    <mark className="bg-yellow-400/30 font-semibold text-yellow-100">{result.match}</mark>
+                    {result.after}
+                    {result.suffixEllipsis && <span className="text-white/40">...</span>}
+                  </p>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setActiveConversationId(result.conversationId);
+                      setChatMode("conversation");
+                      setSearchResults([]);
+                      setInput("");
+                      if (window.innerWidth < 1024) {
+                        setSidebarOpen(false);
+                      }
+                    }}
+                    className="mt-3 text-xs text-white/50 hover:text-white"
+                  >
+                    View conversation →
+                  </button>
+                </motion.div>
+              ))}
+            </div>
+          )}
+          {chatMode === "search" && searchResults.length === 0 && input.length === 0 && (
+            <div className="mx-auto flex max-w-5xl flex-col items-center justify-center py-12 text-center">
+              <Search className="h-12 w-12 text-white/20" />
+              <h3 className="mt-4 text-lg font-semibold text-white/70">Search your conversations</h3>
+              <p className="mt-2 text-sm text-white/50">
+                Enter a search query to find messages across all your conversations
+              </p>
+            </div>
+          )}
+          {chatMode === "search" && searchResults.length === 0 && input.length > 0 && (
+            <div className="mx-auto flex max-w-5xl flex-col items-center justify-center py-12 text-center">
+              <Search className="h-12 w-12 text-white/20" />
+              <h3 className="mt-4 text-lg font-semibold text-white/70">No results found</h3>
+              <p className="mt-2 text-sm text-white/50">
+                Try different keywords or check your spelling
+              </p>
+            </div>
+          )}
+          {chatMode !== "search" && (
+            <AnimatePresence initial={false}>
+              {messages.map((message) => (
+                <motion.div
+                  key={message.id}
+                  layout
+                  initial={{ opacity: 0, y: 12 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  exit={{ opacity: 0, y: -12 }}
+                  transition={{ duration: 0.3 }}
+                  className={`mx-auto flex max-w-5xl gap-4 ${message.role === "user" ? "flex-row-reverse" : "flex-row"}`}
+                >
+                  <div
+                    className={`mt-1 flex h-9 w-9 flex-shrink-0 items-center justify-center rounded-full border ${
+                      message.role === "user" ? "border-white/40 bg-white/20" : "border-white/10 bg-white/10"
+                    }`}
+                  >
+                    {message.role === "user" ? <User className="h-5 w-5" /> : <Bot className="h-5 w-5" />}
+                  </div>
+                  <div
+                    className={`flex-1 rounded-2xl border px-4 py-3 text-sm leading-relaxed backdrop-blur ${
+                      message.role === "user"
+                        ? "border-white/20 bg-white/10 text-white"
+                        : "border-white/10 bg-black/40 text-white/90"
+                    }`}
+                  >
+                    {message.mode === "deepthink" && message.role === "assistant" && (
+                      <div className="mb-3 inline-flex items-center gap-1.5 rounded-full border border-purple-300/30 bg-purple-500/10 px-2.5 py-1 text-xs font-medium text-purple-200">
+                        <Brain className="h-3 w-3" />
+                        Deepthink Mode
+                      </div>
+                    )}
+                    <p className="whitespace-pre-wrap">{message.content}</p>
+                    <span className="mt-3 block text-right text-[10px] uppercase tracking-widest text-white/35">
+                      {formatTimestamp(message.timestamp)}
+                    </span>
+                  </div>
+                </motion.div>
+              ))}
+            </AnimatePresence>
+          )}
+          {isStreaming && chatMode !== "search" && (
             <motion.div
               className="mx-auto flex max-w-5xl items-center gap-3 text-sm text-white/60"
               initial={{ opacity: 0, y: 12 }}
@@ -651,7 +874,7 @@ export default function ChatPage() {
               </div>
               <div className="flex items-center gap-2">
                 <Loader2 className="h-4 w-4 animate-spin" />
-                Oculus AI is crafting a response...
+                {chatMode === "deepthink" ? "Analyzing deeply..." : "Oculus AI is crafting a response..."}
               </div>
             </motion.div>
           )}
@@ -662,27 +885,50 @@ export default function ChatPage() {
             <form onSubmit={handleSubmit} className="flex flex-col gap-3 md:flex-row md:items-end">
               <div className="flex-1 space-y-2">
                 <div className="flex items-center gap-2 text-xs text-white/40">
-                  <Sparkles className="h-3 w-3" />
-                  <span>{activeModel?.name ?? "Oculus AI"}</span>
+                  {chatMode === "conversation" && <Sparkles className="h-3 w-3" />}
+                  {chatMode === "search" && <Search className="h-3 w-3" />}
+                  {chatMode === "deepthink" && <Brain className="h-3 w-3" />}
+                  <span>
+                    {chatMode === "conversation" && (activeModel?.name ?? "Oculus AI")}
+                    {chatMode === "search" && "Search Mode"}
+                    {chatMode === "deepthink" && `${activeModel?.name ?? "Oculus AI"} • Deepthink`}
+                  </span>
                 </div>
                 <Input
-                  placeholder="Ask about vision pipelines, integration tactics, or benchmarking insights..."
+                  placeholder={
+                    chatMode === "conversation"
+                      ? "Ask about vision pipelines, integration tactics, or benchmarking insights..."
+                      : chatMode === "search"
+                        ? "Search across all conversations..."
+                        : "Ask a complex question for deep analysis..."
+                  }
                   value={input}
                   onChange={(event) => setInput(event.target.value)}
                   className="min-h-[3rem] border-white/10 bg-white/5 text-white focus-visible:ring-white/40"
-                  disabled={isStreaming}
+                  disabled={chatMode !== "search" && isStreaming}
                 />
               </div>
               <Button
                 type="submit"
+                aria-label={chatMode === "search" ? "Run search" : "Send message"}
                 className="group flex h-12 w-full items-center justify-center rounded-full bg-white text-black hover:bg-gray-200 md:w-12"
-                disabled={isStreaming || !input.trim()}
+                disabled={(chatMode !== "search" && isStreaming) || !input.trim()}
               >
-                {isStreaming ? <Loader2 className="h-5 w-5 animate-spin" /> : <Send className="h-5 w-5 group-hover:-translate-y-1" />}
+                {isStreaming ? (
+                  <Loader2 className="h-5 w-5 animate-spin" />
+                ) : chatMode === "search" ? (
+                  <Search className="h-5 w-5" />
+                ) : (
+                  <Send className="h-5 w-5 group-hover:-translate-y-1" />
+                )}
               </Button>
             </form>
             <p className="mt-3 text-xs text-white/35">
-              Conversations refresh with each session. Connect your own backend to persist history and enable streaming responses.
+              {chatMode === "conversation" &&
+                "Conversations refresh with each session. Connect your own backend to persist history and enable streaming responses."}
+              {chatMode === "search" && "Search is performed locally across all loaded conversations."}
+              {chatMode === "deepthink" &&
+                "Deepthink mode provides extended reasoning with structured analysis and key takeaways."}
             </p>
           </div>
         </div>
@@ -799,9 +1045,36 @@ function SidebarOverlay({ onDismiss }: { onDismiss: () => void }) {
   );
 }
 
-function generateAssistantReply(prompt: string, model: OculusModel): string {
+function generateAssistantReply(prompt: string, model: OculusModel, mode: ChatMode): string {
   const intro = `Routing through ${model.name} (${model.contextWindowLabel}) with ${model.performance.accuracy} accuracy.`;
   const seriesInsight = SERIES_RESPONSES[model.series] ?? SERIES_RESPONSES.foundation;
+
+  if (mode === "deepthink") {
+    const keyTakeaways = [
+      "Key findings",
+      "Operational considerations",
+      "Recommended next actions",
+      "Validation checkpoints",
+    ];
+
+    const takeawaysList = keyTakeaways
+      .map((item) => {
+        const insight = prompt.length > 160
+          ? `• ${item}: Layer plans to address the multi-step objective while safeguarding edge conditions.`
+          : `• ${item}: Focus on high-signal steps to keep delivery lean without sacrificing robustness.`;
+        return insight;
+      })
+      .join("\n");
+
+    return [
+      intro,
+      seriesInsight,
+      "Deepthink synopsis:",
+      takeawaysList,
+      "Next step: Convert this outline into an execution-ready plan or request scenario stress tests.",
+    ].join("\n\n");
+  }
+
   const promptInsight =
     prompt.length > 120
       ? "It looks like you're considering a complex workflow. Breaking it into modular inference steps helps maintain clarity and traceability."
