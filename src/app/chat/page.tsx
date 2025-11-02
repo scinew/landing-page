@@ -1,6 +1,6 @@
 "use client";
 
-import { FormEvent, useEffect, useMemo, useRef, useState } from "react";
+import { FormEvent, useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import {
   Bot,
@@ -29,12 +29,13 @@ import {
   type ModelSeries,
   type OculusModel,
 } from "@/lib/models";
+import { formatTimestamp } from "@/lib/utils";
 
 interface ChatMessage {
   id: string;
   role: "user" | "assistant";
   content: string;
-  timestamp: string;
+  timestamp: number;
 }
 
 interface Conversation {
@@ -125,45 +126,51 @@ const SERIES_RESPONSES: Record<ModelSeries | "secret", string> = {
     "Openflowith channels initiated. Temporal reasoning threads and quantum-safe heuristics are in effect—handle with care.",
 };
 
-const formatTime = (timestamp: string) => timestamp;
 const ellipsize = (text: string, length = 48) => (text.length > length ? `${text.slice(0, length)}…` : text);
 
 export default function ChatPage() {
-  const createAssistantGreeting = (modelRecord: OculusModel) =>
-    `You're speaking with ${modelRecord.name}. Ask about detection strategies, performance tuning, or deployment orchestration.`;
+  const createAssistantGreeting = useCallback(
+    (modelRecord: OculusModel) =>
+      `You're speaking with ${modelRecord.name}. Ask about detection strategies, performance tuning, or deployment orchestration.`,
+    [],
+  );
 
-  const createConversation = (modelRecord: OculusModel): Conversation => {
-    const timestamp = new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" });
-    return {
-      id: crypto.randomUUID(),
-      title: "New Conversation",
-      messages: [
-        {
-          id: crypto.randomUUID(),
-          role: "assistant",
-          content: createAssistantGreeting(modelRecord),
-          timestamp,
-        },
-      ],
-      createdAt: new Date(),
-      updatedAt: new Date(),
-      model: modelRecord.id,
-    };
-  };
+  const createConversation = useCallback(
+    (modelRecord: OculusModel, timestamp: number): Conversation => {
+      const createdAt = new Date(timestamp);
+      return {
+        id: crypto.randomUUID(),
+        title: "New Conversation",
+        messages: [
+          {
+            id: crypto.randomUUID(),
+            role: "assistant",
+            content: createAssistantGreeting(modelRecord),
+            timestamp,
+          },
+        ],
+        createdAt,
+        updatedAt: createdAt,
+        model: modelRecord.id,
+      };
+    },
+    [createAssistantGreeting],
+  );
 
-  const initialConversationRef = useRef<Conversation | null>(null);
+  const [initialTimestamp] = useState(() => Date.now());
+
+  const initialConversation = useMemo(
+    () => createConversation(DEFAULT_MODEL, initialTimestamp),
+    [createConversation, initialTimestamp],
+  );
 
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [secretUnlocked, setSecretUnlocked] = useState(false);
   const [unlockProgress, setUnlockProgress] = useState(0);
   const [settingsOpen, setSettingsOpen] = useState(false);
-  const [conversations, setConversations] = useState<Conversation[]>(() => {
-    if (!initialConversationRef.current) {
-      initialConversationRef.current = createConversation(DEFAULT_MODEL);
-    }
-    return [initialConversationRef.current];
-  });
-  const [activeConversationId, setActiveConversationId] = useState<string>(() => initialConversationRef.current?.id ?? "");
+  const [conversations, setConversations] = useState<Conversation[]>(() => [initialConversation]);
+  const [activeConversationId, setActiveConversationId] = useState<string>(() => initialConversation.id);
+
   const [model, setModel] = useState<string>(DEFAULT_MODEL.id);
   const [input, setInput] = useState("");
   const [isStreaming, setIsStreaming] = useState(false);
@@ -172,7 +179,11 @@ export default function ChatPage() {
   useEffect(() => {
     if (typeof window === "undefined") return;
     const media = window.matchMedia("(min-width: 1024px)");
-    setSidebarOpen(media.matches);
+    const timeout = setTimeout(() => {
+      setSidebarOpen(media.matches);
+    }, 0);
+
+    return () => clearTimeout(timeout);
   }, []);
 
   useEffect(() => {
@@ -180,60 +191,64 @@ export default function ChatPage() {
     const modelParam = urlParams.get("model");
     if (!modelParam) return;
 
-    if (modelParam === SECRET_MODEL.id || modelParam === "openflowith") {
-      setSecretUnlocked(true);
-      setUnlockProgress(3);
-      setModel(SECRET_MODEL.id);
-      setConversations((prev) =>
-        prev.map((conversation, index) =>
-          index === 0
-            ? {
-                ...conversation,
-                model: SECRET_MODEL.id,
-                messages:
-                  conversation.messages.length === 1 && conversation.messages[0].role === "assistant"
-                    ? [
-                        {
-                          ...conversation.messages[0],
-                          content: createAssistantGreeting(SECRET_MODEL),
-                          timestamp: new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" }),
-                        },
-                      ]
-                    : conversation.messages,
-                updatedAt: new Date(),
-              }
-            : conversation,
-        ),
-      );
-      setActiveConversationId((prev) => prev || (initialConversationRef.current?.id ?? ""));
-    } else {
-      const targetModel = PUBLIC_MODELS.find((item) => item.id === modelParam);
-      if (!targetModel) return;
-      setModel(targetModel.id);
-      setConversations((prev) =>
-        prev.map((conversation, index) =>
-          index === 0
-            ? {
-                ...conversation,
-                model: targetModel.id,
-                messages:
-                  conversation.messages.length === 1 && conversation.messages[0].role === "assistant"
-                    ? [
-                        {
-                          ...conversation.messages[0],
-                          content: createAssistantGreeting(targetModel),
-                          timestamp: new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" }),
-                        },
-                      ]
-                    : conversation.messages,
-                updatedAt: new Date(),
-              }
-            : conversation,
-        ),
-      );
-      setActiveConversationId((prev) => prev || (initialConversationRef.current?.id ?? ""));
-    }
-  }, []);
+    const timeout = setTimeout(() => {
+      if (modelParam === SECRET_MODEL.id || modelParam === "openflowith") {
+        setSecretUnlocked(true);
+        setUnlockProgress(3);
+        setModel(SECRET_MODEL.id);
+        setConversations((prev) =>
+          prev.map((conversation, index) =>
+            index === 0
+              ? {
+                  ...conversation,
+                  model: SECRET_MODEL.id,
+                  messages:
+                    conversation.messages.length === 1 && conversation.messages[0].role === "assistant"
+                      ? [
+                          {
+                            ...conversation.messages[0],
+                            content: createAssistantGreeting(SECRET_MODEL),
+                            timestamp: Date.now(),
+                          },
+                        ]
+                      : conversation.messages,
+                  updatedAt: new Date(),
+                }
+              : conversation,
+          ),
+        );
+        setActiveConversationId((prev) => prev || initialConversation.id);
+      } else {
+        const targetModel = PUBLIC_MODELS.find((item) => item.id === modelParam);
+        if (!targetModel) return;
+        setModel(targetModel.id);
+        setConversations((prev) =>
+          prev.map((conversation, index) =>
+            index === 0
+              ? {
+                  ...conversation,
+                  model: targetModel.id,
+                  messages:
+                    conversation.messages.length === 1 && conversation.messages[0].role === "assistant"
+                      ? [
+                          {
+                            ...conversation.messages[0],
+                            content: createAssistantGreeting(targetModel),
+                            timestamp: Date.now(),
+                          },
+                        ]
+                      : conversation.messages,
+                  updatedAt: new Date(),
+                }
+              : conversation,
+          ),
+        );
+        setActiveConversationId((prev) => prev || initialConversation.id);
+      }
+    }, 0);
+
+    return () => clearTimeout(timeout);
+  }, [createAssistantGreeting, initialConversation]);
 
   const modelOptions = useMemo<ModelOption[]>(() => {
     if (secretUnlocked) {
@@ -253,7 +268,11 @@ export default function ChatPage() {
 
   useEffect(() => {
     if (!modelOptions.some((option) => option.value === model) && modelOptions.length > 0) {
-      setModel(modelOptions[0].value);
+      const timeout = setTimeout(() => {
+        setModel(modelOptions[0].value);
+      }, 0);
+
+      return () => clearTimeout(timeout);
     }
   }, [model, modelOptions]);
 
@@ -289,9 +308,13 @@ export default function ChatPage() {
   useEffect(() => {
     if (!activeConversation) return;
     if (activeConversation.model !== model) {
-      setModel(activeConversation.model);
+      const timeout = setTimeout(() => {
+        setModel(activeConversation.model);
+      }, 0);
+
+      return () => clearTimeout(timeout);
     }
-  }, [activeConversation?.model]);
+  }, [activeConversation, model]);
 
   const contextHints = useMemo(() => {
     if (!activeModel) return [];
@@ -315,7 +338,7 @@ export default function ChatPage() {
 
   const handleNewChat = () => {
     const referencedModel = activeModel ?? DEFAULT_MODEL;
-    const newConversation = createConversation(referencedModel);
+    const newConversation = createConversation(referencedModel, Date.now());
     setConversations((prev) => [newConversation, ...prev]);
     setActiveConversationId(newConversation.id);
     setModel(referencedModel.id);
@@ -350,7 +373,7 @@ export default function ChatPage() {
     event.preventDefault();
     if (!input.trim() || !activeConversation || !activeModel) return;
 
-    const timestamp = new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" });
+    const timestamp = Date.now();
     const userMessage: ChatMessage = {
       id: crypto.randomUUID(),
       role: "user",
@@ -386,7 +409,7 @@ export default function ChatPage() {
         id: crypto.randomUUID(),
         role: "assistant",
         content: assistantsThoughts,
-        timestamp: new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" }),
+        timestamp: Date.now(),
       };
       setConversations((prev) =>
         prev
@@ -468,7 +491,7 @@ export default function ChatPage() {
                       <div className="flex items-center justify-between gap-2">
                         <div className="text-sm font-semibold truncate">{conversation.title}</div>
                         <span className="text-[10px] uppercase tracking-wide text-white/40">
-                          {lastMessage ? formatTime(lastMessage.timestamp) : ""}
+                          {lastMessage ? formatTimestamp(lastMessage.timestamp) : ""}
                         </span>
                       </div>
                       <div className="mt-2 flex items-center gap-2 text-xs text-white/40">
@@ -610,7 +633,7 @@ export default function ChatPage() {
                 >
                   <p className="whitespace-pre-wrap">{message.content}</p>
                   <span className="mt-3 block text-right text-[10px] uppercase tracking-widest text-white/35">
-                    {message.timestamp}
+                    {formatTimestamp(message.timestamp)}
                   </span>
                 </div>
               </motion.div>

@@ -21,10 +21,7 @@ import {
   Zap,
   Search,
   ListChecks,
-  LineChart,
-  Cpu,
   TrendingUp,
-  Database,
   Server,
   Workflow,
 } from "lucide-react";
