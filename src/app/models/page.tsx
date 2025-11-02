@@ -50,7 +50,7 @@ export default function ModelsPage() {
   return (
     <>
       <SiteHeader />
-      <div className="relative min-h-screen bg-black text-white">
+      <div className="site-shell relative min-h-screen bg-black text-white">
         <div className="absolute inset-0 -z-10">
           <div className="absolute top-24 left-10 h-96 w-96 rounded-full bg-white/10 blur-3xl" />
           <div className="absolute bottom-24 right-10 h-[30rem] w-[30rem] rounded-full bg-white/10 blur-3xl" />

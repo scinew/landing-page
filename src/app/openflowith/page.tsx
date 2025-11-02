@@ -33,7 +33,7 @@ export default function OpenflowithPage() {
   return (
     <>
       <SiteHeader />
-      <div className="relative min-h-screen overflow-hidden bg-black text-white">
+      <div className="site-shell relative min-h-screen overflow-hidden bg-black text-white">
         <div className="pointer-events-none absolute inset-0 -z-10">
           <div className="absolute inset-0 bg-[radial-gradient(circle_at_top,rgba(255,255,255,0.15),transparent_55%)]" />
           <div className="absolute bottom-0 left-1/2 h-[40rem] w-[40rem] -translate-x-1/2 rounded-full bg-white/10 blur-[180px]" />
