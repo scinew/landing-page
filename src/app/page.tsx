@@ -203,7 +203,7 @@ export default function Home() {
             >
               <Button size="lg" className="bg-white text-black hover:bg-gray-200 px-8 py-6 text-lg group" asChild>
                 <Link href="/chat">
-                  Try Chat Demo
+                  Try Now
                   <ArrowRight className="ml-2 w-5 h-5 group-hover:translate-x-1 transition-transform" />
                 </Link>
               </Button>
@@ -428,7 +428,6 @@ export default function Home() {
               <div className="flex gap-6 text-sm text-white/40">
                 <Link href="/models" className="hover:text-white transition-colors">Models</Link>
                 <Link href="/register" className="hover:text-white transition-colors">Register</Link>
-                <Link href="/chat" className="hover:text-white transition-colors">Chat</Link>
                 <Link href="/checkout" className="hover:text-white transition-colors">Plans</Link>
                 <Link href="/docs" className="hover:text-white transition-colors">Docs</Link>
               </div>

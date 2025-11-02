@@ -11,7 +11,6 @@ const NAV_ITEMS = [
   { href: "/models", label: "Models" },
   { href: "/register", label: "Register" },
   { href: "/checkout", label: "Plans" },
-  { href: "/chat", label: "Chat" },
   { href: "/docs", label: "Docs" },
 ];
 
