@@ -680,7 +680,7 @@ export default function CheckoutPage() {
                           Prefer to talk now? Email us directly and one of our specialists will respond within hours.
                         </p>
                         <div className="mt-3">
-                          <Button asChild variant="secondary" className="bg-white text-black hover:bg-gray-200">
+                          <Button asChild variant="inverted">
                             <a href="mailto:sales@example.com">Contact sales</a>
                           </Button>
                         </div>
@@ -690,12 +690,7 @@ export default function CheckoutPage() {
                 )}
 
                 <div className="space-y-4">
-                  <Button
-                    type="submit"
-                    size="lg"
-                    disabled={isSubmitting}
-                    className="flex w-full items-center justify-center gap-2 bg-white text-black hover:bg-gray-200"
-                  >
+                  <Button type="submit" size="lg" disabled={isSubmitting} variant="inverted" className="flex w-full items-center justify-center gap-2">
                     {isSubmitting ? (
                       <span className="flex items-center gap-2">
                         <span className="h-4 w-4 animate-spin rounded-full border-2 border-black/30 border-t-black" />

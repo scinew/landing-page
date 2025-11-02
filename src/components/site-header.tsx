@@ -132,12 +132,7 @@ export function SiteHeader() {
             <div className="hidden text-xs font-medium text-white/40 lg:block">
               Vision intelligence at scale
             </div>
-            <Button
-              asChild
-              variant="outline"
-              size="sm"
-              className="hidden border-white/20 bg-white/5 text-white hover:bg-white hover:text-black sm:flex"
-            >
+            <Button asChild variant="outline" size="sm" className="hidden sm:flex">
               <Link href="#pricing">Get Access</Link>
             </Button>
 
@@ -224,10 +219,7 @@ export function SiteHeader() {
                     <p className="px-4 text-xs font-medium text-white/40 mb-4">
                       Vision intelligence at scale
                     </p>
-                    <Button
-                      asChild
-                      className="w-full bg-white text-black hover:bg-gray-200"
-                    >
+                    <Button asChild variant="inverted" className="w-full">
                       <Link href="#pricing" onClick={() => setMobileMenuOpen(false)}>
                         Get Access
                       </Link>

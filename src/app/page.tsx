@@ -201,7 +201,7 @@ export default function Home() {
               transition={{ duration: 0.8, delay: 0.6 }}
               className="flex flex-col sm:flex-row gap-4 justify-center items-center"
             >
-              <Button size="lg" className="bg-white text-black hover:bg-gray-200 px-8 py-6 text-lg group" asChild>
+              <Button size="lg" variant="inverted" className="px-8 py-6 text-lg group" asChild>
                 <Link href="/chat">
                   Try Now
                   <ArrowRight className="ml-2 w-5 h-5 group-hover:translate-x-1 transition-transform" />
@@ -210,7 +210,7 @@ export default function Home() {
               <Button
                 size="lg"
                 variant="outline"
-                className="border-white/20 text-white hover:bg-white/10 bg-transparent px-8 py-6 text-lg"
+                className="px-8 py-6 text-lg"
                 asChild
               >
                 <Link href="/register">
@@ -331,7 +331,7 @@ export default function Home() {
                           </div>
                         ))}
                       </div>
-                      <Button className="w-full mt-6 bg-white text-black hover:bg-gray-200" asChild>
+                      <Button variant="inverted" className="w-full mt-6" asChild>
                         <Link href="/chat">
                           Test {model.model}
                           <ArrowRight className="ml-2 w-4 h-4" />
@@ -403,12 +403,8 @@ export default function Home() {
                         ))}
                       </ul>
                       <Button
-                        className={`w-full ${
-                          tier.highlight
-                            ? "bg-white text-black hover:bg-gray-200"
-                            : "border-white/20 bg-white/10 text-white hover:bg-white/20"
-                        }`}
-                        variant={tier.highlight ? "default" : "outline"}
+                        className="w-full"
+                        variant={tier.highlight ? "inverted" : "outline"}
                         asChild
                       >
                         <Link href={tier.href}>{tier.cta}</Link>
