@@ -525,11 +525,11 @@ export default function ChatPage() {
       <AnimatePresence>
         {sidebarOpen && (
           <motion.aside
-            initial={{ x: -320 }}
+            initial={{ x: "-100%" }}
             animate={{ x: 0 }}
-            exit={{ x: -320 }}
+            exit={{ x: "-100%" }}
             transition={{ type: "spring", damping: 26, stiffness: 220 }}
-            className="fixed inset-y-0 left-0 z-50 flex w-80 flex-col border-r border-white/10 bg-black/95 backdrop-blur-xl"
+            className="fixed inset-y-0 left-0 z-50 flex w-full max-w-sm flex-col border-r border-white/10 bg-black/95 backdrop-blur-xl lg:max-w-none lg:w-80"
           >
             <div className="flex items-center justify-between border-b border-white/10 p-4">
               <Link href="/" className="flex items-center gap-2 font-mono text-sm uppercase tracking-[0.3em] text-white/80">
@@ -619,10 +619,10 @@ export default function ChatPage() {
         )}
       </AnimatePresence>
 
-      <div className={`flex min-h-screen flex-1 flex-col transition-all duration-300 ${sidebarOpen ? "md:ml-80" : "ml-0"}`}>
+      <div className={`flex min-h-screen flex-1 flex-col transition-all duration-300 ${sidebarOpen ? "lg:ml-80" : "ml-0"}`}>
         <header className="border-b border-white/10 bg-black/80 backdrop-blur-xl">
-          <div className="flex flex-wrap items-center justify-between gap-4 px-4 py-4">
-            <div className="flex items-center gap-3">
+          <div className="flex flex-col gap-4 px-4 py-4 lg:flex-row lg:items-start lg:justify-between">
+            <div className="flex w-full items-start gap-3 sm:w-auto sm:items-center">
               {!sidebarOpen && (
                 <Button variant="ghost" size="sm" aria-label="Open sidebar" onClick={() => setSidebarOpen(true)}>
                   <Menu className="h-5 w-5" />
@@ -630,17 +630,17 @@ export default function ChatPage() {
               )}
               <div>
                 <h1 className="text-lg font-semibold">{activeConversation?.title ?? "New Conversation"}</h1>
-                <p className="text-xs text-white/40">
+                <p className="text-xs text-white/45 sm:text-sm sm:text-white/40">
                   {activeModel?.name ?? "Oculus AI"} • {activeModel?.contextWindowLabel ?? "Context aware"}
                 </p>
               </div>
             </div>
-            <div className="flex flex-wrap items-center gap-3">
-              <div className="relative">
+            <div className="flex flex-col gap-3 sm:flex-row sm:flex-wrap sm:items-center sm:justify-end">
+              <div className="relative w-full sm:w-auto sm:min-w-[220px]">
                 <select
                   value={model}
                   onChange={(event) => handleModelSelection(event.target.value)}
-                  className="flex h-10 min-w-[200px] appearance-none items-center rounded-md border border-white/10 bg-black/40 px-3 text-sm text-white focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-white/40"
+                  className="h-10 w-full rounded-md border border-white/10 bg-black/40 px-3 text-sm text-white focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-white/40"
                 >
                   {groupedOptions.map((group) => (
                     <optgroup key={group.displaySeries} label={`${group.displaySeries} Series`}>
@@ -654,77 +654,34 @@ export default function ChatPage() {
                 </select>
                 <span className="pointer-events-none absolute inset-y-0 right-3 flex items-center text-white/40">▾</span>
               </div>
-              <Button variant="outline" onClick={handleNewChat} className="flex items-center gap-2">
+              <Button
+                variant="outline"
+                onClick={handleNewChat}
+                className="flex w-full items-center justify-center gap-2 sm:w-auto"
+              >
                 <Plus className="h-4 w-4" />
                 New Chat
               </Button>
-              <Button variant="outline" onClick={() => setSettingsOpen(true)} className="flex items-center gap-2">
+              <Button
+                variant="outline"
+                onClick={() => setSettingsOpen(true)}
+                className="flex w-full items-center justify-center gap-2 sm:w-auto"
+              >
                 <Settings className="h-4 w-4" />
                 Settings
               </Button>
-              <div className="hidden text-xs text-white/40 md:block">{messages.length} messages</div>
-            </div>
-          </div>
-          <div className="border-t border-white/10 px-4 py-3">
-            <div className="mx-auto flex max-w-5xl items-center gap-2">
-              <span className="text-xs text-white/50">Mode:</span>
-              <div className="inline-flex rounded-lg border border-white/10 bg-white/5 p-1">
-                <button
-                  type="button"
-                  aria-pressed={chatMode === "conversation"}
-                  onClick={() => {
-                    setChatMode("conversation");
-                    setSearchResults([]);
-                  }}
-                  className={`flex items-center gap-1.5 rounded-md px-3 py-1.5 text-xs font-medium transition-all ${
-                    chatMode === "conversation"
-                      ? "bg-white text-black shadow-sm"
-                      : "text-white/70 hover:text-white hover:bg-white/10"
-                  }`}
-                >
-                  <MessagesSquare className="h-3.5 w-3.5" />
-                  <span className="hidden sm:inline">Conversation</span>
-                </button>
-                <button
-                  type="button"
-                  aria-pressed={chatMode === "search"}
-                  onClick={() => {
-                    setChatMode("search");
-                  }}
-                  className={`flex items-center gap-1.5 rounded-md px-3 py-1.5 text-xs font-medium transition-all ${
-                    chatMode === "search"
-                      ? "bg-white text-black shadow-sm"
-                      : "text-white/70 hover:text-white hover:bg-white/10"
-                  }`}
-                >
-                  <Search className="h-3.5 w-3.5" />
-                  <span className="hidden sm:inline">Search</span>
-                </button>
-                <button
-                  type="button"
-                  aria-pressed={chatMode === "deepthink"}
-                  onClick={() => {
-                    setChatMode("deepthink");
-                    setSearchResults([]);
-                  }}
-                  className={`flex items-center gap-1.5 rounded-md px-3 py-1.5 text-xs font-medium transition-all ${
-                    chatMode === "deepthink"
-                      ? "bg-white text-black shadow-sm"
-                      : "text-white/70 hover:text-white hover:bg-white/10"
-                  }`}
-                >
-                  <Brain className="h-3.5 w-3.5" />
-                  <span className="hidden sm:inline">Deepthink</span>
-                </button>
-              </div>
+              <div className="text-xs text-white/40 sm:text-right">{messages.length} messages</div>
             </div>
           </div>
         </header>
 
-        <div ref={containerRef} className="flex-1 space-y-6 overflow-y-auto px-4 py-6">
+        <div
+          ref={containerRef}
+          className="flex-1 space-y-5 overflow-y-auto px-3 py-5 sm:space-y-6 sm:px-4 sm:py-6"
+        >
           {chatMode === "search" && searchResults.length > 0 && (
-            <div className="mx-auto max-w-5xl space-y-4">
-              <div className="flex items-center justify-between">
+            <div className="mx-auto w-full max-w-5xl space-y-4">
+              <div className="flex flex-wrap items-center justify-between gap-2">
                 <h2 className="text-sm font-semibold text-white">
                   Found {searchResults.length} {searchResults.length === 1 ? "result" : "results"}
                 </h2>
@@ -748,11 +705,11 @@ export default function ChatPage() {
                   animate={{ opacity: 1, y: 0 }}
                   className="rounded-xl border border-white/10 bg-white/5 p-4 backdrop-blur"
                 >
-                  <div className="mb-2 flex items-center justify-between text-xs">
+                  <div className="mb-2 flex flex-wrap items-center justify-between gap-2 text-xs">
                     <span className="font-medium text-white/70">{result.conversationTitle}</span>
                     <span className="text-white/40">{formatTimestamp(result.timestamp)}</span>
                   </div>
-                  <p className="text-sm leading-relaxed text-white/80">
+                  <p className="break-words text-sm leading-relaxed text-white/80">
                     {result.prefixEllipsis && <span className="text-white/40">...</span>}
                     {result.before}
                     <mark className="bg-yellow-400/30 font-semibold text-yellow-100">{result.match}</mark>
@@ -770,7 +727,7 @@ export default function ChatPage() {
                         setSidebarOpen(false);
                       }
                     }}
-                    className="mt-3 text-xs text-white/50 hover:text-white"
+                    className="mt-3 text-xs text-white/60 hover:text-white"
                   >
                     View conversation →
                   </button>
@@ -779,7 +736,7 @@ export default function ChatPage() {
             </div>
           )}
           {chatMode === "search" && searchResults.length === 0 && input.length === 0 && (
-            <div className="mx-auto flex max-w-5xl flex-col items-center justify-center py-12 text-center">
+            <div className="mx-auto flex w-full max-w-5xl flex-col items-center justify-center py-12 text-center">
               <Search className="h-12 w-12 text-white/20" />
               <h3 className="mt-4 text-lg font-semibold text-white/70">Search your conversations</h3>
               <p className="mt-2 text-sm text-white/50">
@@ -788,7 +745,7 @@ export default function ChatPage() {
             </div>
           )}
           {chatMode === "search" && searchResults.length === 0 && input.length > 0 && (
-            <div className="mx-auto flex max-w-5xl flex-col items-center justify-center py-12 text-center">
+            <div className="mx-auto flex w-full max-w-5xl flex-col items-center justify-center py-12 text-center">
               <Search className="h-12 w-12 text-white/20" />
               <h3 className="mt-4 text-lg font-semibold text-white/70">No results found</h3>
               <p className="mt-2 text-sm text-white/50">
@@ -806,17 +763,19 @@ export default function ChatPage() {
                   animate={{ opacity: 1, y: 0 }}
                   exit={{ opacity: 0, y: -12 }}
                   transition={{ duration: 0.3 }}
-                  className={`mx-auto flex max-w-5xl gap-4 ${message.role === "user" ? "flex-row-reverse" : "flex-row"}`}
+                  className={`mx-auto flex w-full max-w-5xl gap-3 sm:gap-4 ${
+                    message.role === "user" ? "flex-row-reverse" : "flex-row"
+                  }`}
                 >
                   <div
-                    className={`mt-1 flex h-9 w-9 flex-shrink-0 items-center justify-center rounded-full border ${
+                    className={`mt-1 flex h-8 w-8 flex-shrink-0 items-center justify-center rounded-full border sm:h-9 sm:w-9 ${
                       message.role === "user" ? "border-white/40 bg-white/20" : "border-white/10 bg-white/10"
                     }`}
                   >
                     {message.role === "user" ? <User className="h-5 w-5" /> : <Bot className="h-5 w-5" />}
                   </div>
                   <div
-                    className={`flex-1 rounded-2xl border px-4 py-3 text-sm leading-relaxed backdrop-blur ${
+                    className={`flex-1 rounded-2xl border px-3.5 py-3 text-sm leading-relaxed backdrop-blur sm:px-4 sm:text-base ${
                       message.role === "user"
                         ? "border-white/20 bg-white/10 text-white"
                         : "border-white/10 bg-black/40 text-white/90"
@@ -828,8 +787,8 @@ export default function ChatPage() {
                         Deepthink Mode
                       </div>
                     )}
-                    <p className="whitespace-pre-wrap">{message.content}</p>
-                    <span className="mt-3 block text-right text-[10px] uppercase tracking-widest text-white/35">
+                    <p className="whitespace-pre-wrap break-words">{message.content}</p>
+                    <span className="mt-3 block text-right text-[10px] uppercase tracking-[0.2em] text-white/35 sm:tracking-[0.3em]">
                       {formatTimestamp(message.timestamp)}
                     </span>
                   </div>
@@ -839,12 +798,12 @@ export default function ChatPage() {
           )}
           {isStreaming && chatMode !== "search" && (
             <motion.div
-              className="mx-auto flex max-w-5xl items-center gap-3 text-sm text-white/60"
+              className="mx-auto flex w-full max-w-5xl items-center gap-3 text-sm text-white/60"
               initial={{ opacity: 0, y: 12 }}
               animate={{ opacity: 1, y: 0 }}
               exit={{ opacity: 0, y: -12 }}
             >
-              <div className="flex h-9 w-9 items-center justify-center rounded-full border border-white/10 bg-white/10">
+              <div className="flex h-8 w-8 items-center justify-center rounded-full border border-white/10 bg-white/10 sm:h-9 sm:w-9">
                 <Bot className="h-5 w-5" />
               </div>
               <div className="flex items-center gap-2">
@@ -856,14 +815,69 @@ export default function ChatPage() {
         </div>
 
         <div className="border-t border-white/10 bg-black/80 backdrop-blur-xl">
-          <div className="mx-auto max-w-5xl px-4 py-4">
-            <form onSubmit={handleSubmit} className="flex flex-col gap-3 md:flex-row md:items-end">
-              <div className="flex-1 space-y-2">
-                <div className="flex items-center gap-2 text-xs text-white/40">
-                  {chatMode === "conversation" && <Sparkles className="h-3 w-3" />}
-                  {chatMode === "search" && <Search className="h-3 w-3" />}
-                  {chatMode === "deepthink" && <Brain className="h-3 w-3" />}
-                  <span>
+          <div className="mx-auto w-full max-w-5xl px-4 py-4 safe-bottom">
+            <form
+              onSubmit={handleSubmit}
+              className="grid gap-4 md:grid-cols-[minmax(0,320px),1fr,auto] md:items-end"
+            >
+              <div className="flex flex-col gap-2">
+                <span className="text-xs font-semibold uppercase tracking-[0.25em] text-white/45">Mode</span>
+                <div className="flex flex-col gap-2 sm:flex-row sm:flex-wrap">
+                  <button
+                    type="button"
+                    aria-pressed={chatMode === "conversation"}
+                    onClick={() => {
+                      setChatMode("conversation");
+                      setSearchResults([]);
+                    }}
+                    className={`flex w-full items-center justify-center gap-1.5 rounded-md border px-3 py-2 text-sm font-medium transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/60 ${
+                      chatMode === "conversation"
+                        ? "border-white bg-white text-black shadow-sm"
+                        : "border-white/15 bg-white/5 text-white/70 hover:border-white/30 hover:text-white"
+                    } sm:flex-1`}
+                  >
+                    <MessagesSquare className="h-4 w-4" />
+                    <span>Conversation</span>
+                  </button>
+                  <button
+                    type="button"
+                    aria-pressed={chatMode === "search"}
+                    onClick={() => {
+                      setChatMode("search");
+                    }}
+                    className={`flex w-full items-center justify-center gap-1.5 rounded-md border px-3 py-2 text-sm font-medium transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/60 ${
+                      chatMode === "search"
+                        ? "border-white bg-white text-black shadow-sm"
+                        : "border-white/15 bg-white/5 text-white/70 hover:border-white/30 hover:text-white"
+                    } sm:flex-1`}
+                  >
+                    <Search className="h-4 w-4" />
+                    <span>Search</span>
+                  </button>
+                  <button
+                    type="button"
+                    aria-pressed={chatMode === "deepthink"}
+                    onClick={() => {
+                      setChatMode("deepthink");
+                      setSearchResults([]);
+                    }}
+                    className={`flex w-full items-center justify-center gap-1.5 rounded-md border px-3 py-2 text-sm font-medium transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/60 ${
+                      chatMode === "deepthink"
+                        ? "border-white bg-white text-black shadow-sm"
+                        : "border-white/15 bg-white/5 text-white/70 hover:border-white/30 hover:text-white"
+                    } sm:flex-1`}
+                  >
+                    <Brain className="h-4 w-4" />
+                    <span>Deepthink</span>
+                  </button>
+                </div>
+              </div>
+              <div className="flex flex-col gap-2">
+                <div className="flex flex-wrap items-center gap-2 text-xs text-white/45 sm:text-sm sm:text-white/50">
+                  {chatMode === "conversation" && <Sparkles className="h-4 w-4 shrink-0" />}
+                  {chatMode === "search" && <Search className="h-4 w-4 shrink-0" />}
+                  {chatMode === "deepthink" && <Brain className="h-4 w-4 shrink-0" />}
+                  <span className="font-medium text-white/80">
                     {chatMode === "conversation" && (activeModel?.name ?? "Oculus AI")}
                     {chatMode === "search" && "Search Mode"}
                     {chatMode === "deepthink" && `${activeModel?.name ?? "Oculus AI"} • Deepthink`}
@@ -886,7 +900,7 @@ export default function ChatPage() {
               <Button
                 type="submit"
                 aria-label={chatMode === "search" ? "Run search" : "Send message"}
-                className="group flex h-12 w-full items-center justify-center rounded-full bg-white text-black hover:bg-gray-200 md:w-12"
+                className="group flex h-12 w-full items-center justify-center rounded-full bg-white text-black hover:bg-gray-200 md:h-[3.25rem] md:w-[3.25rem]"
                 disabled={(chatMode !== "search" && isStreaming) || !input.trim()}
               >
                 {isStreaming ? (
@@ -898,7 +912,7 @@ export default function ChatPage() {
                 )}
               </Button>
             </form>
-            <p className="mt-3 text-xs text-white/35">
+            <p className="mt-3 text-xs text-white/40">
               {chatMode === "conversation" &&
                 "Conversations refresh with each session. Connect your own backend to persist history and enable streaming responses."}
               {chatMode === "search" && "Search is performed locally across all loaded conversations."}
@@ -911,96 +925,106 @@ export default function ChatPage() {
 
       <AnimatePresence>
         {settingsOpen && (
-          <motion.div
-            initial={{ x: 360 }}
-            animate={{ x: 0 }}
-            exit={{ x: 360 }}
-            transition={{ type: "spring", damping: 24, stiffness: 220 }}
-            className="fixed inset-y-0 right-0 z-50 w-full max-w-md border-l border-white/10 bg-black/95 backdrop-blur-xl"
-          >
-            <Card className="h-full border-0 bg-transparent shadow-none">
-              <CardHeader className="border-b border-white/10">
-                <div className="flex items-center justify-between">
-                  <CardTitle className="text-white">Settings</CardTitle>
-                  <Button
-                    variant="ghost"
-                    size="sm"
-                    onClick={() => setSettingsOpen(false)}
-                    className="text-white/60 hover:bg-white/10 hover:text-white"
-                  >
-                    <X className="h-5 w-5" />
-                  </Button>
-                </div>
-                <CardDescription className="text-white/60">
-                  Fine-tune your chat workspace
-                </CardDescription>
-              </CardHeader>
-              <CardContent className="space-y-6 pt-6">
-                <div className="space-y-2">
-                  <Label htmlFor="settings-model" className="text-white">
-                    Active model
-                  </Label>
-                  <div className="relative">
-                    <select
-                      id="settings-model"
-                      value={model}
-                      onChange={(event) => handleModelSelection(event.target.value)}
-                      className="flex h-10 w-full appearance-none rounded-md border border-white/10 bg-black/40 px-3 text-sm text-white focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-white/40"
+          <>
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 0.5 }}
+              exit={{ opacity: 0 }}
+              transition={{ duration: 0.2 }}
+              className="fixed inset-0 z-40 bg-black lg:hidden"
+              onClick={() => setSettingsOpen(false)}
+            />
+            <motion.div
+              initial={{ x: "100%" }}
+              animate={{ x: 0 }}
+              exit={{ x: "100%" }}
+              transition={{ type: "spring", damping: 24, stiffness: 220 }}
+              className="fixed inset-y-0 right-0 z-50 w-full bg-black/95 backdrop-blur-xl lg:w-full lg:max-w-md lg:border-l lg:border-white/10"
+            >
+              <Card className="flex h-full flex-col border-0 bg-transparent shadow-none">
+                <CardHeader className="sticky top-0 z-10 border-b border-white/10 bg-black/95 backdrop-blur-xl safe-top">
+                  <div className="flex items-center justify-between">
+                    <CardTitle className="text-white">Settings</CardTitle>
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      onClick={() => setSettingsOpen(false)}
+                      className="text-white/60 hover:bg-white/10 hover:text-white"
                     >
-                      {groupedOptions.map((group) => (
-                        <optgroup key={group.displaySeries} label={`${group.displaySeries} Series`}>
-                          {group.options.map((option) => (
-                            <option key={option.value} value={option.value} className="bg-black text-white">
-                              {option.label}
-                            </option>
-                          ))}
-                        </optgroup>
-                      ))}
-                    </select>
-                    <span className="pointer-events-none absolute inset-y-0 right-3 flex items-center text-white/40">▾</span>
+                      <X className="h-5 w-5" />
+                    </Button>
                   </div>
-                  {activeModel && (
-                    <div className="mt-3 grid grid-cols-2 gap-3 rounded-lg border border-white/10 bg-black/30 p-4 text-xs text-white/60">
-                      <div>
-                        <p className="uppercase tracking-wide">Context</p>
-                        <p className="mt-1 text-sm font-semibold text-white">{activeModel.contextWindowLabel}</p>
-                      </div>
-                      <div>
-                        <p className="uppercase tracking-wide">Availability</p>
-                        <p className="mt-1 text-sm font-semibold text-white">{activeModel.availabilityLabel}</p>
-                      </div>
-                      <div>
-                        <p className="uppercase tracking-wide">Pricing</p>
-                        <p className="mt-1 text-sm font-semibold text-white">
-                          ${activeModel.pricing.input.toFixed(2)} / ${activeModel.pricing.output.toFixed(2)}
-                        </p>
-                      </div>
-                      <div>
-                        <p className="uppercase tracking-wide">Accuracy</p>
-                        <p className="mt-1 text-sm font-semibold text-white">{activeModel.performance.accuracy}</p>
-                      </div>
+                  <CardDescription className="text-white/60">
+                    Fine-tune your chat workspace
+                  </CardDescription>
+                </CardHeader>
+                <CardContent className="flex-1 space-y-6 overflow-y-auto px-4 pb-8 pt-6 safe-bottom">
+                  <div className="space-y-2">
+                    <Label htmlFor="settings-model" className="text-white">
+                      Active model
+                    </Label>
+                    <div className="relative">
+                      <select
+                        id="settings-model"
+                        value={model}
+                        onChange={(event) => handleModelSelection(event.target.value)}
+                        className="flex h-10 w-full appearance-none rounded-md border border-white/10 bg-black/40 px-3 text-sm text-white focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-white/40"
+                      >
+                        {groupedOptions.map((group) => (
+                          <optgroup key={group.displaySeries} label={`${group.displaySeries} Series`}>
+                            {group.options.map((option) => (
+                              <option key={option.value} value={option.value} className="bg-black text-white">
+                                {option.label}
+                              </option>
+                            ))}
+                          </optgroup>
+                        ))}
+                      </select>
+                      <span className="pointer-events-none absolute inset-y-0 right-3 flex items-center text-white/40">▾</span>
                     </div>
-                  )}
-                </div>
+                    {activeModel && (
+                      <div className="mt-3 grid grid-cols-2 gap-3 rounded-lg border border-white/10 bg-black/30 p-4 text-xs text-white/60">
+                        <div>
+                          <p className="text-[10px] uppercase tracking-wide sm:text-xs">Context</p>
+                          <p className="mt-1 text-sm font-semibold text-white">{activeModel.contextWindowLabel}</p>
+                        </div>
+                        <div>
+                          <p className="text-[10px] uppercase tracking-wide sm:text-xs">Availability</p>
+                          <p className="mt-1 text-sm font-semibold text-white">{activeModel.availabilityLabel}</p>
+                        </div>
+                        <div>
+                          <p className="text-[10px] uppercase tracking-wide sm:text-xs">Pricing</p>
+                          <p className="mt-1 text-sm font-semibold text-white">
+                            ${activeModel.pricing.input.toFixed(2)} / ${activeModel.pricing.output.toFixed(2)}
+                          </p>
+                        </div>
+                        <div>
+                          <p className="text-[10px] uppercase tracking-wide sm:text-xs">Accuracy</p>
+                          <p className="mt-1 text-sm font-semibold text-white">{activeModel.performance.accuracy}</p>
+                        </div>
+                      </div>
+                    )}
+                  </div>
 
-                <div className="rounded-lg border border-white/10 bg-white/5 p-4">
-                  <p className="text-xs font-semibold uppercase tracking-wider text-white/60">Context hints</p>
-                  <ul className="mt-3 space-y-2 text-sm text-white/80">
-                    {contextHints.map((hint) => (
-                      <li key={hint} className="flex items-start gap-2">
-                        <Sparkles className="mt-0.5 h-4 w-4 flex-shrink-0 text-white/50" />
-                        {hint}
-                      </li>
-                    ))}
-                  </ul>
-                </div>
+                  <div className="rounded-lg border border-white/10 bg-white/5 p-4">
+                    <p className="text-xs font-semibold uppercase tracking-wider text-white/60">Context hints</p>
+                    <ul className="mt-3 space-y-2 text-sm leading-relaxed text-white/80">
+                      {contextHints.map((hint) => (
+                        <li key={hint} className="flex items-start gap-2">
+                          <Sparkles className="mt-0.5 h-4 w-4 flex-shrink-0 text-white/50" />
+                          <span>{hint}</span>
+                        </li>
+                      ))}
+                    </ul>
+                  </div>
 
-                <div className="rounded-lg border border-white/10 bg-white/5 p-4 text-xs text-white/50">
-                  Responses are simulated for this demo. Integrate the streaming API to connect your backend, persist threads, and enable multi-participant conversations.
-                </div>
-              </CardContent>
-            </Card>
-          </motion.div>
+                  <div className="rounded-lg border border-white/10 bg-white/5 p-4 text-xs leading-relaxed text-white/50">
+                    Responses are simulated for this demo. Integrate the streaming API to connect your backend, persist threads, and enable multi-participant conversations.
+                  </div>
+                </CardContent>
+              </Card>
+            </motion.div>
+          </>
         )}
       </AnimatePresence>
     </div>
@@ -1014,7 +1038,7 @@ function SidebarOverlay({ onDismiss }: { onDismiss: () => void }) {
       animate={{ opacity: 0.5 }}
       exit={{ opacity: 0 }}
       transition={{ duration: 0.2 }}
-      className="fixed inset-0 z-40 bg-black md:hidden"
+      className="fixed inset-0 z-40 bg-black/70 lg:hidden"
       onClick={onDismiss}
     />
   );
