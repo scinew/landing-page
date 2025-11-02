@@ -541,17 +541,13 @@ export default function ChatPage() {
                 size="sm"
                 aria-label="Close sidebar"
                 onClick={() => setSidebarOpen(false)}
-                className="text-white/60 hover:bg-white/10 hover:text-white"
               >
                 <X className="h-5 w-5" />
               </Button>
             </div>
 
             <div className="p-4">
-              <Button
-                onClick={handleNewChat}
-                className="flex w-full items-center justify-center gap-2 bg-white text-black hover:bg-gray-200"
-              >
+              <Button onClick={handleNewChat} variant="inverted" className="flex w-full items-center justify-center gap-2">
                 <Plus className="h-4 w-4" />
                 New Chat
               </Button>
@@ -608,19 +604,12 @@ export default function ChatPage() {
                 </span>
                 {!secretUnlocked && <span>{Math.max(0, 3 - unlockProgress)} taps</span>}
               </button>
-              <Button
-                variant="outline"
-                className="flex w-full items-center justify-center gap-2 border-white/10 bg-white/5 text-white hover:bg-white/10"
-                onClick={() => setSettingsOpen(true)}
-              >
+              <Button variant="outline" className="flex w-full items-center justify-center gap-2" onClick={() => setSettingsOpen(true)}>
                 <Settings className="h-4 w-4" />
                 Settings
               </Button>
               <Link href="/">
-                <Button
-                  variant="outline"
-                  className="flex w-full items-center justify-center gap-2 border-white/10 bg-white/5 text-white hover:bg-white/10"
-                >
+                <Button variant="outline" className="flex w-full items-center justify-center gap-2">
                   <ChevronLeft className="h-4 w-4" />
                   Back to Home
                 </Button>
@@ -635,13 +624,7 @@ export default function ChatPage() {
           <div className="flex flex-wrap items-center justify-between gap-4 px-4 py-4">
             <div className="flex items-center gap-3">
               {!sidebarOpen && (
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  aria-label="Open sidebar"
-                  onClick={() => setSidebarOpen(true)}
-                  className="text-white/60 hover:bg-white/10 hover:text-white"
-                >
+                <Button variant="ghost" size="sm" aria-label="Open sidebar" onClick={() => setSidebarOpen(true)}>
                   <Menu className="h-5 w-5" />
                 </Button>
               )}
@@ -671,19 +654,11 @@ export default function ChatPage() {
                 </select>
                 <span className="pointer-events-none absolute inset-y-0 right-3 flex items-center text-white/40">▾</span>
               </div>
-              <Button
-                variant="outline"
-                onClick={handleNewChat}
-                className="flex items-center gap-2 border-white/20 bg-white/10 text-white hover:bg-white/20"
-              >
+              <Button variant="outline" onClick={handleNewChat} className="flex items-center gap-2">
                 <Plus className="h-4 w-4" />
                 New Chat
               </Button>
-              <Button
-                variant="outline"
-                onClick={() => setSettingsOpen(true)}
-                className="flex items-center gap-2 border-white/20 bg-white/10 text-white hover:bg-white/20"
-              >
+              <Button variant="outline" onClick={() => setSettingsOpen(true)} className="flex items-center gap-2">
                 <Settings className="h-4 w-4" />
                 Settings
               </Button>

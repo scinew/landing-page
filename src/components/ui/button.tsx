@@ -5,20 +5,35 @@ import { cva, type VariantProps } from "class-variance-authority"
 import { cn } from "@/lib/utils"
 
 const buttonVariants = cva(
-  "inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-md text-sm font-medium transition-all disabled:pointer-events-none disabled:opacity-50 [&_svg]:pointer-events-none [&_svg:not([class*='size-'])]:size-4 shrink-0 [&_svg]:shrink-0 outline-none focus-visible:border-ring focus-visible:ring-ring/50 focus-visible:ring-[3px] aria-invalid:ring-destructive/20 dark:aria-invalid:ring-destructive/40 aria-invalid:border-destructive",
+  [
+    "inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-md text-sm font-medium",
+    "transition-[background-color,color,border-color,box-shadow,transform]",
+    "disabled:pointer-events-none disabled:opacity-50",
+    "shrink-0 [&_svg]:pointer-events-none [&_svg:not([class*='size-'])]:size-4 [&_svg]:shrink-0 outline-none",
+    "focus-visible:border-ring focus-visible:ring-ring/50 focus-visible:ring-[3px]",
+    "aria-invalid:ring-destructive/20 dark:aria-invalid:ring-destructive/40 aria-invalid:border-destructive",
+    "[--btn-bg:var(--primary)] [--btn-fg:var(--primary-foreground)] [--btn-border:transparent]",
+    "[--btn-hover-bg:var(--btn-bg)] [--btn-hover-fg:var(--btn-fg)] [--btn-hover-border:var(--btn-border)]",
+    "border border-[var(--btn-border)] bg-[var(--btn-bg)] text-[var(--btn-fg)]",
+    "hover:border-[var(--btn-hover-border)] hover:bg-[var(--btn-hover-bg)] hover:text-[var(--btn-hover-fg)]",
+  ].join(" "),
   {
     variants: {
       variant: {
-        default: "bg-primary text-primary-foreground hover:bg-primary/90",
+        default:
+          "[--btn-bg:var(--primary)] [--btn-fg:var(--primary-foreground)] [--btn-hover-bg:color-mix(in_oklch,_var(--primary)_92%,_var(--background)_8%)] [--btn-hover-fg:var(--primary-foreground)]",
         destructive:
-          "bg-destructive text-white hover:bg-destructive/90 focus-visible:ring-destructive/20 dark:focus-visible:ring-destructive/40 dark:bg-destructive/60",
+          "[--btn-bg:var(--destructive)] [--btn-fg:oklch(0.985_0_0)] [--btn-hover-bg:color-mix(in_oklch,_var(--destructive)_88%,_black_12%)] [--btn-hover-fg:oklch(0.985_0_0)] focus-visible:ring-destructive/20 dark:focus-visible:ring-destructive/40",
         outline:
-          "border bg-background shadow-xs hover:bg-accent hover:text-accent-foreground dark:bg-input/30 dark:border-input dark:hover:bg-input/50",
+          "shadow-xs [--btn-border:color-mix(in_oklch,_var(--foreground)_15%,_transparent)] [--btn-bg:color-mix(in_oklch,_var(--foreground)_6%,_transparent)] [--btn-fg:var(--foreground)] [--btn-hover-border:color-mix(in_oklch,_var(--foreground)_25%,_transparent)] [--btn-hover-bg:color-mix(in_oklch,_var(--foreground)_14%,_transparent)] [--btn-hover-fg:var(--foreground)]",
         secondary:
-          "bg-secondary text-secondary-foreground hover:bg-secondary/80",
+          "[--btn-bg:var(--secondary)] [--btn-fg:var(--secondary-foreground)] [--btn-hover-bg:color-mix(in_oklch,_var(--secondary)_88%,_var(--background)_12%)] [--btn-hover-fg:var(--secondary-foreground)]",
         ghost:
-          "hover:bg-accent hover:text-accent-foreground dark:hover:bg-accent/50",
-        link: "text-primary underline-offset-4 hover:underline",
+          "[--btn-border:transparent] [--btn-bg:transparent] [--btn-fg:var(--foreground)] [--btn-hover-bg:color-mix(in_oklch,_var(--foreground)_12%,_transparent)] [--btn-hover-fg:var(--foreground)]",
+        link:
+          "border-0 bg-transparent p-0 font-medium [--btn-border:transparent] [--btn-bg:transparent] [--btn-hover-border:transparent] [--btn-hover-bg:transparent] [--btn-fg:var(--primary)] [--btn-hover-fg:var(--primary)] underline-offset-4 hover:underline",
+        inverted:
+          "shadow-xs [--btn-border:color-mix(in_oklch,_oklch(0.145_0_0)_12%,_transparent)] [--btn-bg:oklch(0.985_0_0)] [--btn-fg:oklch(0.145_0_0)] [--btn-hover-border:color-mix(in_oklch,_oklch(0.145_0_0)_18%,_transparent)] [--btn-hover-bg:color-mix(in_oklch,_oklch(0.985_0_0)_88%,_oklch(0.9_0_0)_12%)] [--btn-hover-fg:oklch(0.205_0_0)]",
       },
       size: {
         default: "h-9 px-4 py-2 has-[>svg]:px-3",

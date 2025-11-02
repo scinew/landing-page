@@ -60,17 +60,13 @@ export default function OpenflowithPage() {
               conventional context limits, orchestrating temporal reasoning threads with a <span className="font-semibold text-white">{MODEL.contextWindowLabel}</span> memory lattice and <span className="font-semibold text-white">{MODEL.performance.accuracy}</span> precision envelope.
             </p>
             <div className="mt-6 flex flex-wrap justify-center gap-4">
-              <Button asChild className="bg-white text-black hover:bg-gray-200">
+              <Button asChild variant="inverted">
                 <Link href="/models">
                   <ArrowLeft className="mr-2 h-4 w-4" />
                   Return to Portfolio
                 </Link>
               </Button>
-              <Button
-                variant="outline"
-                className="border-white/30 bg-white/10 text-white hover:bg-white/20"
-                asChild
-              >
+              <Button variant="outline" asChild>
                 <Link href="/register">
                   <Lock className="mr-2 h-4 w-4" />
                   Request Invitation

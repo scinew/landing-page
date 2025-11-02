@@ -217,11 +217,7 @@ export default function RegisterPage() {
                     ) : null}
                   </motion.div>
 
-                  <Button
-                    type="submit"
-                    className="group flex w-full items-center justify-center gap-2 bg-white text-black hover:bg-gray-200"
-                    disabled={isSubmitting}
-                  >
+                  <Button type="submit" variant="inverted" className="group flex w-full items-center justify-center gap-2" disabled={isSubmitting}>
                     {isSubmitting ? (
                       <>
                         <Loader2 className="h-4 w-4 animate-spin" />

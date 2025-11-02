@@ -271,7 +271,7 @@ export default function Documentation() {
       </div>
 
       <div className="relative z-10 mx-auto max-w-6xl px-4 py-12 sm:px-6 lg:px-8">
-        <Button asChild variant="outline" className="mb-8 border-white/20 bg-transparent text-white hover:bg-white/10">
+        <Button asChild variant="outline" className="mb-8">
           <Link href="/">
             <ArrowLeft className="mr-2 h-4 w-4" />
             Back to Home
@@ -328,7 +328,7 @@ export default function Documentation() {
                   </CardDescription>
                 </CardHeader>
                 <CardContent>
-                  <Button className="w-full bg-white text-black hover:bg-gray-200">Schedule session</Button>
+                  <Button variant="inverted" className="w-full">Schedule session</Button>
                 </CardContent>
               </Card>
             </div>

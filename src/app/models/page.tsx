@@ -73,10 +73,10 @@ export default function ModelsPage() {
             Explore our suite of production-ready vision models with tiered pricing and enterprise-grade SLAs.
           </p>
           <div className="mt-6 flex flex-wrap items-center justify-center gap-4">
-            <Button asChild className="bg-white text-black hover:bg-gray-200">
+            <Button asChild variant="inverted">
               <Link href="/register">Get Started</Link>
             </Button>
-            <Button variant="outline" className="border-white/20 bg-white/10 text-white hover:bg-white/20" asChild>
+            <Button variant="outline" asChild>
               <Link href="/checkout">View Pricing</Link>
             </Button>
           </div>
